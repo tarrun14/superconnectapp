@@ -1,5 +1,9 @@
 name: Deploy to GitHub Pages
 
+# Resilient GitHub Pages deployment:
+# - try `npm ci --legacy-peer-deps --no-audit --no-fund`
+# - fall back to `npm install --legacy-peer-deps` if `npm ci` fails
+# - build and upload ./build artifact
 on:
   push:
     branches:
@@ -17,36 +21,41 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Job to build the application
+  # Job to build the application and upload the build artifact
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js Environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Adjust if you require a different Node version
+          node-version: '18'
+          cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps --no-audit --no-fund || npm install --legacy-peer-deps
+      - name: Install dependencies (resilient)
+        env:
+          CI: true
+        run: |
+          echo "Attempting npm ci (with legacy peer deps); fallback to npm install on failure"
+          npm ci --legacy-peer-deps --no-audit --no-fund || npm install --legacy-peer-deps
 
-      - name: Build Application
+      - name: Build
         run: npm run build
 
-      - name: Upload Build Artifact
+      - name: Upload build artifact for Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build
 
-  # Job to deploy the uploaded artifact
+  # Job to deploy the uploaded artifact to GitHub Pages
   deploy:
+    runs-on: ubuntu-latest
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
