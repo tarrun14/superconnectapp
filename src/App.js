@@ -1,4 +1,6 @@
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { HashRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "./supabaseClient";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -21,7 +23,18 @@ const NO_NAVBAR_ROUTES = ["/", "/login", "/signup"];
 
 function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const showNavbar = !NO_NAVBAR_ROUTES.includes(location.pathname);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        navigate("/home");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
     <>
