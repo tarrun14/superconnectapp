@@ -191,6 +191,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const init = async () => {
@@ -289,6 +290,7 @@ function ProjectCard({ project, currentUser, navigate }) {
 
   useEffect(() => {
     if (currentUser) checkFollow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const checkFollow = async () => {

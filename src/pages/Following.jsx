@@ -93,6 +93,7 @@ const styles = `
 `;
 
 export default function Following() {
+  // eslint-disable-next-line no-unused-vars
   const [user, setUser] = useState(null);
   const [following, setFollowing] = useState([]);
   const [projectFollowing, setProjectFollowing] = useState([]); // ✅ NEW
@@ -102,6 +103,7 @@ export default function Following() {
 
   useEffect(() => {
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const init = async () => {

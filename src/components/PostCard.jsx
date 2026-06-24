@@ -32,6 +32,7 @@ export default function PostCard({ post, onDelete }) {
     };
 
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.id]);
 
   // ================= LIKE =================
@@ -106,7 +107,7 @@ export default function PostCard({ post, onDelete }) {
   console.log("CLICKED FOLLOW BUTTON");
 
   // 🔍 always check fresh data from DB
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing } = await supabase
     .from("follows")
     .select("id")
     .eq("follower_id", user.id)

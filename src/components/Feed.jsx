@@ -10,6 +10,7 @@ export default function Feed({ refresh, search, category, topic, sort }) {
 
   useEffect(() => {
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, search, category, topic, sort]);
 
   const fetchPosts = async () => {

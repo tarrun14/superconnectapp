@@ -93,6 +93,7 @@ const Login = () => {
           </div>
 
           <div className="forgot-link">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a href="#">Forgot password?</a>
           </div>
 
