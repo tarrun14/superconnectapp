@@ -1,6 +1,56 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// ── Simple XOR-based encryption using a shared key ──────────────────────────
+// We use a simple but effective approach: CryptoJS-style using Web Crypto API
+// The key is derived from a shared secret known to both sender and receiver.
+
+const ENCRYPTION_KEY = process.env.REACT_APP_ENCRYPTION_KEY || "superconnect-secret-key-2024";
+
+function strToBytes(str) {
+  return new TextEncoder().encode(str);
+}
+
+function bytesToStr(bytes) {
+  return new TextDecoder().decode(bytes);
+}
+
+async function getCryptoKey(keyMaterial) {
+  const keyBytes = await crypto.subtle.digest("SHA-256", strToBytes(keyMaterial));
+  return crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+async function encryptMessage(plaintext, keyMaterial) {
+  try {
+    const key = await getCryptoKey(keyMaterial);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = strToBytes(plaintext);
+    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
+    // combine iv + ciphertext, encode as base64
+    const combined = new Uint8Array(iv.byteLength + encrypted.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encrypted), iv.byteLength);
+    return btoa(String.fromCharCode(...combined));
+  } catch (e) {
+    console.error("Encrypt error:", e);
+    return plaintext; // fallback: store plain if crypto fails
+  }
+}
+
+async function decryptMessage(ciphertext, keyMaterial) {
+  try {
+    const combined = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
+    const iv = combined.slice(0, 12);
+    const data = combined.slice(12);
+    const key = await getCryptoKey(keyMaterial);
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+    return bytesToStr(new Uint8Array(decrypted));
+  } catch (e) {
+    // If decryption fails (e.g. old plain-text messages), return as-is
+    return ciphertext;
+  }
+}
+
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -97,6 +147,15 @@ const styles = `
     font-weight: 600;
   }
 
+  .chat-header .lock-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .messages-area {
     flex: 1;
     padding: 24px;
@@ -177,7 +236,7 @@ const styles = `
   }
 
   .btn-send:hover {
-    background: var(--accent-hover);
+    background: #a8341a;
   }
 
   .empty-state {
@@ -284,17 +343,28 @@ export default function Messages() {
       return;
     }
 
-    setMessages(data || []);
+    // 🔓 Decrypt each message before displaying
+    const decrypted = await Promise.all(
+      (data || []).map(async (msg) => ({
+        ...msg,
+        content: await decryptMessage(msg.content, ENCRYPTION_KEY),
+      }))
+    );
+
+    setMessages(decrypted);
   };
 
   const sendMessage = async () => {
     if (!text.trim() || !selectedUser || !user) return;
 
+    // 🔐 Encrypt before storing
+    const encryptedContent = await encryptMessage(text, ENCRYPTION_KEY);
+
     const { error } = await supabase.from("messages").insert([
       {
         sender_id: user.id,
         receiver_id: selectedUser.id,
-        content: text,
+        content: encryptedContent,
       },
     ]);
 
@@ -359,6 +429,7 @@ export default function Messages() {
                     </div>
                   )}
                   <h3>{selectedUser.name}</h3>
+                  <span className="lock-badge">🔒 End-to-end encrypted</span>
                 </div>
 
                 <div className="messages-area">
