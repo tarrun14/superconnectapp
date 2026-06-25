@@ -1,17 +1,15 @@
 /* =========================
    PAGE BACKGROUND
 ========================= */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap');
-
 :root {
-  --bg: #f5f0e8;
-  --surface: #faf7f2;
-  --border: #e2d9cc;
-  --ink: #1a1612;
-  --ink-muted: #7a6f63;
-  --accent: #c8441a;
-  --accent-hover: #a83515;
-  --shadow: 0 12px 40px rgba(26,22,18,0.06);
+  --bg: #0F0F11;
+  --surface: #1A1A1F;
+  --border: #2A2A2F;
+  --ink: #F4F4F5;
+  --ink-muted: #A1A1AA;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --shadow: 0 12px 40px rgba(0,0,0,0.3);
   --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -21,7 +19,7 @@
   justify-content: center;
   align-items: center;
   background: var(--bg);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--ink);
   padding: 20px;
 }
@@ -31,12 +29,13 @@
 ========================= */
 .login-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   padding: 40px;
   border-radius: 16px;
   background: var(--surface);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
   text-align: center;
 }
 
@@ -60,10 +59,10 @@
    HEADER
 ========================= */
 .login-header h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   margin-bottom: 8px;
-  color: var(--ink);
-  font-size: 2rem;
+  color: #F4F4F5;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -86,14 +85,14 @@
   padding: 12px;
   margin-bottom: 12px;
   border-radius: 8px;
-  border: 1.5px solid var(--border);
+  border: 1px solid #3A3A3F;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   font-size: 0.95rem;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   color: var(--ink);
   transition: all var(--transition);
@@ -104,26 +103,27 @@
 }
 
 .social-btn.google {
-  background: transparent;
+  background: #2A2A2F;
 }
 
 .social-btn.github {
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--ink);
 }
 
 .social-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26,22,18,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .social-btn.google:hover {
-  border-color: #c8b9a8;
+  background: #35353A;
+  border-color: #4A4A4F;
 }
 
 .social-btn.github:hover {
-  background: #332d27;
+  background: #d4d4d8;
 }
 
 /* =========================
@@ -166,7 +166,7 @@
 .input-group {
   display: flex;
   align-items: center;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
   margin-bottom: 16px;
@@ -176,7 +176,7 @@
 
 .input-group:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(200,68,26,0.1);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
 
 .input-icon {
@@ -190,7 +190,7 @@
   outline: none;
   width: 100%;
   font-size: 0.95rem;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   color: var(--ink);
 }
 
@@ -215,6 +215,7 @@
 }
 
 .forgot-link a:hover {
+  color: #A855F7;
   text-decoration: underline;
 }
 
@@ -229,14 +230,14 @@
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   transition: all var(--transition);
 }
 
 .btn-primary {
   background: var(--accent);
   color: white;
-  box-shadow: 0 4px 14px rgba(200,68,26,0.25);
+  box-shadow: 0 4px 14px rgba(124,58,237,0.25);
 }
 
 .btn-primary:active {
@@ -265,5 +266,16 @@
 }
 
 .signup-link a:hover {
+  color: #A855F7;
   text-decoration: underline;
-}
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 400px) {
+  .login-card {
+    width: 90%;
+    padding: 24px;
+  }
+}

@@ -4,18 +4,16 @@ import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
-    --accent-hover: #a83515;
-    --shadow: 0 2px 12px rgba(26,22,18,0.07);
-    --radius: 10px;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
+    --accent-hover: #6D28D9;
+    --shadow: 0 4px 12px rgba(0,0,0,0.2);
+    --radius: 12px;
     --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -24,7 +22,7 @@ const styles = `
   .profile-root {
     min-height: 100vh;
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
     padding: 80px 24px 80px;
   }
@@ -40,12 +38,12 @@ const styles = `
     gap: 12px;
     margin-bottom: 48px;
     padding-bottom: 20px;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .profile-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -53,14 +51,11 @@ const styles = `
   }
 
   .profile-header .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
+    display: none;
   }
 
   .section-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -70,7 +65,7 @@ const styles = `
 
   .create-section {
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 28px;
     margin-bottom: 48px;
@@ -80,27 +75,40 @@ const styles = `
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
   .form-field {
     width: 100%;
     background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 7px;
-    padding: 11px 14px;
-    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    font-size: 0.95rem;
+    transition: border-color var(--transition);
+    outline: none;
+  }
+  
+  .form-field:focus {
+    border-color: var(--accent);
+  }
+  
+  .form-field::placeholder {
+    color: var(--ink-muted);
   }
 
   .btn-create {
     background: var(--accent);
     color: #fff;
     border: none;
-    border-radius: 7px;
-    padding: 11px 22px;
+    border-radius: 8px;
+    padding: 12px 24px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
     transition: background var(--transition);
   }
 
@@ -109,90 +117,100 @@ const styles = `
   .projects-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
   }
 
   .project-card {
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 24px;
+    padding: 24px;
     cursor: pointer;
     position: relative;
-    transition: transform var(--transition);
+    transition: transform var(--transition), border-color var(--transition);
   }
   
-  .project-card:hover { transform: translateY(-2px); }
+  .project-card:hover { 
+    transform: translateY(-2px); 
+    border-color: var(--accent);
+  }
   
   .delete-btn {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background: #fceae8;
-    color: var(--accent);
-    border: 1px solid #f1cfc8;
+    top: 16px;
+    right: 16px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
     border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
     cursor: pointer;
     z-index: 10;
+    transition: all var(--transition);
   }
 
-  .delete-btn:hover { background: var(--accent); color: white; }
+  .delete-btn:hover { 
+    background: #EF4444; 
+    color: white; 
+  }
 
   .file-label {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+    gap: 8px;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--ink-muted);
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
     border: 1px dashed var(--border);
-    transition: all 200ms ease;
+    transition: all var(--transition);
     align-self: flex-start;
   }
-  .file-label:hover { border-color: var(--accent); color: var(--accent); }
+  .file-label:hover { border-color: var(--accent); color: var(--accent); background: rgba(124, 58, 237, 0.05); }
   .file-input-hidden { display: none; }
   .cover-preview {
     width: 100%;
-    max-width: 300px;
-    height: 140px;
+    max-width: 320px;
+    height: 160px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid var(--border);
-    margin-top: 10px;
+    margin-top: 12px;
   }
   .preview-wrap { position: relative; display: inline-block; }
   .remove-preview {
-    position: absolute; top: 1px; right: 1px;
-    background: var(--accent); color: white;
-    border: none; width: 22px; height: 22px;
+    position: absolute; top: 12px; right: 0;
+    background: #EF4444; color: white;
+    border: none; width: 24px; height: 24px;
     border-radius: 50%; cursor: pointer;
     font-size: 10px; display: flex; align-items: center; justify-content: center;
   }
   .project-list-img {
     width: 100%;
-    height: 120px;
+    height: 180px;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
   }
   .project-tag {
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
-  .tag-idea { background: #e3ebf3; color: #406d96; }
-  .tag-in-progress { background: #fdf2d0; color: #9c6c06; }
-  .tag-live { background: #dcf2e3; color: #2e7a46; }
+  .tag-idea { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+  .tag-in-progress { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+  .tag-live { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
 
   /* ── User Profile Area ── */
   .profile-info-section {
@@ -200,22 +218,23 @@ const styles = `
   }
   .profile-card {
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 28px;
+    padding: 32px;
     box-shadow: var(--shadow);
     display: flex;
     align-items: center;
     gap: 24px;
   }
   .profile-avatar {
-    width: 80px;
-    height: 80px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: var(--accent);
     color: white;
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -227,20 +246,22 @@ const styles = `
     gap: 6px;
   }
   .profile-details h3 {
-    font-size: 1.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
     color: var(--ink);
     margin-bottom: 2px;
   }
   .profile-email {
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: var(--ink-muted);
   }
   .profile-meta {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--ink-muted);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
 `;
 

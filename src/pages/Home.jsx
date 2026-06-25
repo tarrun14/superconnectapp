@@ -3,30 +3,24 @@ import CreatePost from "../components/CreatePost";
 import Feed from "../components/Feed";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
     --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   body.dark {
-    --bg: #1a1612;
-    --surface: #221e19;
-    --border: #2e2720;
-    --ink: #f0ebe2;
-    --ink-muted: #9a8f83;
+    /* No longer needed, theme is dark by default */
   }
 
   .home-root {
     min-height: 100vh;
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
     display: flex;
     justify-content: center;
@@ -43,21 +37,18 @@ const styles = `
     align-items: baseline;
     gap: 10px;
     padding-bottom: 24px;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
   }
 
   .home-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
     font-weight: 700;
   }
 
   .header-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
+    display: none; /* Removed the dot as per user request */
   }
 
   /* 🔥 SEARCH STYLE */
@@ -75,11 +66,23 @@ const styles = `
 
   .search-bar input {
     flex: 1;
-    padding: 10px;
+    padding: 10px 14px;
     border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
     border-radius: 8px;
     outline: none;
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
+    transition: var(--transition);
+  }
+  
+  .search-bar input::placeholder {
+    color: var(--ink-muted);
+  }
+  
+  .search-bar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
   }
 
   .search-bar button {
@@ -89,8 +92,13 @@ const styles = `
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
     font-weight: 500;
+    transition: var(--transition);
+  }
+  
+  .search-bar button:hover {
+    background: #6D28D9;
   }
 
   /* 🔥 FILTERS BAR */
@@ -107,7 +115,7 @@ const styles = `
     outline: none;
     background: var(--surface);
     color: var(--ink);
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     cursor: pointer;
     transition: var(--transition);
@@ -115,8 +123,8 @@ const styles = `
     min-width: 150px;
   }
 
-  .filters-bar select:hover {
-    border-color: var(--ink-muted);
+  .filters-bar select:hover, .filters-bar select:focus {
+    border-color: var(--accent);
   }
 `;
 

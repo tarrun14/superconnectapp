@@ -5,7 +5,7 @@ import { supabase } from "./supabaseClient";
 // Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
@@ -19,7 +19,7 @@ import ProjectHub from "./pages/ProjectHub";
 import Sidebar from "./components/Sidebar";
 
 // Pages where navbar should NOT appear
-const NO_NAVBAR_ROUTES = ["/", "/login", "/signup"];
+const NO_NAVBAR_ROUTES = ["/", "/login", "/register"];
 
 function Layout() {
   const location = useLocation();
@@ -47,8 +47,8 @@ function Layout() {
           {/* Login */}
           <Route path="/login" element={<Login />} />
 
-          {/* Signup */}
-          <Route path="/signup" element={<Signup />} />
+          {/* Register */}
+          <Route path="/register" element={<Register />} />
 
           {/* Dashboard */}
           <Route path="/home" element={<Home />} />

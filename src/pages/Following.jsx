@@ -4,21 +4,19 @@ import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
   }
 
   .page-root {
     min-height: 100vh;
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
     padding: 80px 24px 80px;
   }
@@ -34,12 +32,12 @@ const styles = `
     gap: 12px;
     margin-bottom: 24px;
     padding-bottom: 20px;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .page-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -47,12 +45,7 @@ const styles = `
   }
 
   .page-header .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-    margin-bottom: 4px;
+    display: none;
   }
 
   .section-label {
@@ -66,23 +59,24 @@ const styles = `
 
   .list-card {
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 20px;
     margin-bottom: 12px;
     cursor: pointer;
-    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 1.05rem;
     font-weight: 500;
+    font-family: 'Inter', sans-serif;
   }
 
   .list-card:hover {
-    border-color: #c8b9a8;
+    border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26,22,18,0.05);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
   }
 
   .empty-msg {

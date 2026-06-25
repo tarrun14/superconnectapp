@@ -3,17 +3,16 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
     --nav-height: 64px;
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
-    --accent-hover: #a83515;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
+    --accent-hover: #6D28D9;
+    --accent-light: #A855F7;
     --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -24,16 +23,16 @@ const styles = `
     left: 0;
     right: 0;
     height: var(--nav-height);
-    background: rgba(26, 22, 18, 0.92);
+    background: #111114;
     backdrop-filter: blur(18px) saturate(1.6);
     -webkit-backdrop-filter: blur(18px) saturate(1.6);
     display: flex;
     align-items: center;
     padding: 0 32px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     z-index: 1000;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 1px 24px rgba(0,0,0,0.25);
+    border-bottom: 1px solid #2A2A2F;
+    box-shadow: 0 1px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3);
     box-sizing: border-box;
   }
 
@@ -55,12 +54,13 @@ const styles = `
   }
 
   .brand-text {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.6rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #fff;
     letter-spacing: -0.02em;
     line-height: 1;
+    text-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
   }
 
   /* ── Nav Links ── */
@@ -80,7 +80,7 @@ const styles = `
     padding: 8px 16px;
     border-radius: 8px;
     text-decoration: none;
-    color: rgba(255,255,255,0.5);
+    color: #A1A1AA;
     font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.01em;
@@ -90,31 +90,35 @@ const styles = `
   }
 
   .navbar-link:hover {
-    color: rgba(255,255,255,0.92);
-    background: rgba(255,255,255,0.07);
+    color: #F4F4F5;
+    background: rgba(124, 58, 237, 0.08);
     transform: translateY(-1px);
   }
 
-  .navbar-link.active {
-    color: #fff;
-    background: rgba(200,68,26,0.16);
-  }
-
-  .navbar-link.active .nav-icon {
-    color: var(--accent);
-  }
-
-  /* Active bottom bar indicator */
-  .navbar-link.active::after {
+  .navbar-link:hover::after {
     content: '';
     position: absolute;
     bottom: -1px;
     left: 20%;
     right: 20%;
-    height: 2.5px;
+    height: 2px;
     border-radius: 2px 2px 0 0;
-    background: var(--accent);
-    animation: slideIn 200ms ease-out;
+    background: #A855F7;
+  }
+
+  .navbar-link.active {
+    color: #fff;
+    background: #7C3AED;
+    border-radius: 20px;
+  }
+
+  .navbar-link.active .nav-icon {
+    color: #fff;
+  }
+
+  /* Remove the bottom bar on active (using pill shape instead) */
+  .navbar-link.active::after {
+    display: none;
   }
 
   @keyframes slideIn {
@@ -153,20 +157,20 @@ const styles = `
     align-items: center;
     gap: 6px;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.8);
+    border: 1px solid #2A2A2F;
+    color: #A1A1AA;
     padding: 6px 14px;
     border-radius: 6px;
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
     cursor: pointer;
     transition: all var(--transition);
   }
 
   .btn-logout:hover {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border-color: rgba(255,255,255,0.3);
+    background: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
+    border-color: rgba(239, 68, 68, 0.3);
   }
 
   /* ── Responsive ── */
@@ -194,7 +198,7 @@ const styles = `
       height: 18px;
     }
     .btn-logout span {
-      display: none; /* hide text on small screens */
+      display: none;
     }
   }
 `;

@@ -5,31 +5,45 @@ import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import './Login.css'
 
-const Login = () => {
+const Register = () => {
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
 
   const navigate = useNavigate()
 
-  // 🔐 Email Login
+  const particlesInit = useCallback(async engine => {
+    await loadSlim(engine);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const { error } = await supabase.auth.signInWithPassword({
+    if (password !== confirmPassword) {
+        setMessage("Passwords do not match");
+        return;
+    }
+
+    const { error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        }
+      }
     })
 
     if (error) {
       setMessage(error.message)
     } else {
-      setMessage("Login successful 🎉")
-      navigate("/home")
+      setMessage("Registration successful 🎉 Please check your email to verify.")
+      setTimeout(() => navigate("/login"), 3000)
     }
   }
 
-  // 🔥 Google Login
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -43,14 +57,10 @@ const Login = () => {
     }
   }
 
-  const particlesInit = useCallback(async engine => {
-    await loadSlim(engine);
-  }, []);
-
   return (
     <div className="login-page" style={{ position: "relative", overflow: "hidden" }}>
       <Particles
-          id="tsparticles-login"
+          id="tsparticles-register"
           init={particlesInit}
           style={{
               position: "absolute",
@@ -86,29 +96,37 @@ const Login = () => {
       <div className="login-card animate-slideUp" style={{ position: "relative", zIndex: 1 }}>
 
         <div className="login-header">
-          <h1>Welcome Back</h1>
-          <p>Login to continue to Connect</p>
+          <h1>Create Account</h1>
+          <p>Join Connect and start building</p>
         </div>
 
-        {/* 🔥 Social Login */}
         <div className="social-login">
           <button 
             className="social-btn google"
             onClick={handleGoogleLogin}
+            type="button"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />
             Continue with Google
           </button>
-
-          
         </div>
 
         <div className="divider">
-          <span>or login with email</span>
+          <span>OR SIGN UP WITH EMAIL</span>
         </div>
 
-        {/* 🔐 Email Form */}
         <form onSubmit={handleSubmit} className="login-form">
+
+          <div className="input-group">
+            <span className="input-icon">👤</span>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
 
           <div className="input-group">
             <span className="input-icon">✉️</span>
@@ -132,21 +150,26 @@ const Login = () => {
             />
           </div>
 
-          <div className="forgot-link">
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <a href="#">Forgot password?</a>
+          <div className="input-group">
+            <span className="input-icon">🔒</span>
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
           </div>
 
-          <button type="submit" className="btn btn-primary login-btn">
-            Login
+          <button type="submit" className="btn btn-primary login-btn" style={{ width: '100%', display: 'block' }}>
+            Create Account
           </button>
         </form>
 
-        {/* 🔥 Message */}
         <p style={{ color: "red", marginTop: "10px" }}>{message}</p>
 
         <p className="signup-link">
-          Don't have an account? <Link to="/register">Create one</Link>
+          Already have an account? <Link to="/login">Sign In</Link>
         </p>
 
       </div>
@@ -154,4 +177,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Register

@@ -4,27 +4,25 @@ import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
   }
 
   .page-root {
     min-height: 100vh;
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
     padding: 80px 24px 80px;
   }
 
   .page-inner {
-    max-width: 1000px;
+    max-width: 1200px; /* Wider for 3 column grid */
     margin: 0 auto;
   }
 
@@ -34,12 +32,12 @@ const styles = `
     gap: 12px;
     margin-bottom: 24px;
     padding-bottom: 20px;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .page-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -47,21 +45,37 @@ const styles = `
   }
 
   .page-header .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-    margin-bottom: 4px;
+    display: none; /* Removed the dot */
+  }
+
+  /* 🔥 3 Column Grid for Project Cards */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  
+  @media (max-width: 900px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   .project-card {
     background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 0; /* Removing bottom margin as grid handles gap */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .project-card.clickable {
@@ -69,39 +83,44 @@ const styles = `
   }
 
   .project-card:hover {
-    border-color: #c8b9a8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26,22,18,0.05);
+    border-color: #7C3AED;
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
   }
 
   .project-cover {
     width: 100%;
     height: 180px;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 16px;
     background: var(--bg);
+  }
+  
+  .project-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
   .project-tag {
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
-  .tag-idea { background: #e3ebf3; color: #406d96; }
-  .tag-in-progress { background: #fdf2d0; color: #9c6c06; }
-  .tag-live { background: #dcf2e3; color: #2e7a46; }
+  .tag-idea { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+  .tag-in-progress { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+  .tag-live { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
 
   .project-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--ink);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -110,14 +129,18 @@ const styles = `
   .project-desc {
     font-size: 0.9rem;
     color: var(--ink-muted);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     line-height: 1.5;
+    flex: 1;
   }
 
   .project-owner {
-    font-size: 0.8rem;
+    font-size: 13px; /* As requested */
     color: var(--ink-muted);
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .btn-follow {
@@ -129,7 +152,8 @@ const styles = `
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition: all 0.2s ease;
+    margin-top: auto;
   }
 
   .btn-follow:hover {
@@ -244,7 +268,8 @@ export default function ProjectHub() {
           ) : projects.length === 0 ? (
             <p className="empty-msg">No projects yet</p>
           ) : (
-            projects.map((proj) => {
+            <div className="projects-grid">
+            {projects.map((proj) => {
               const canEnter = proj.isFollowing || proj.user_id === user?.id;
               return (
               <div 
@@ -255,11 +280,12 @@ export default function ProjectHub() {
                 {proj.image_url && (
                   <img src={proj.image_url} alt="Cover" className="project-cover" />
                 )}
-                <div>
-                  <span className={`project-tag tag-${(proj.status || 'idea').replace(' ', '-')}`}>
-                    {proj.status || 'idea'}
-                  </span>
-                </div>
+                <div className="project-content">
+                  <div>
+                    <span className={`project-tag tag-${(proj.status || 'idea').replace(' ', '-')}`}>
+                      {proj.status || 'idea'}
+                    </span>
+                  </div>
                 <div className="project-title">
                   🚀 {proj.title}
                 </div>
@@ -285,9 +311,11 @@ export default function ProjectHub() {
                     {proj.isFollowing ? "Following" : "Follow Project"}
                   </button>
                 )}
+                </div>
               </div>
               );
-            })
+            })}
+            </div>
           )}
         </div>
       </div>

@@ -4,18 +4,16 @@ import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #f5f0e8;
-    --surface: #faf7f2;
-    --border: #e2d9cc;
-    --ink: #1a1612;
-    --ink-muted: #7a6f63;
-    --accent: #c8441a;
-    --accent-hover: #a83515;
-    --shadow: 0 2px 12px rgba(26,22,18,0.07);
-    --radius: 10px;
+    --bg: #0F0F11;
+    --surface: #1A1A1F;
+    --border: #2A2A2F;
+    --ink: #F4F4F5;
+    --ink-muted: #A1A1AA;
+    --accent: #7C3AED;
+    --accent-hover: #6D28D9;
+    --shadow: 0 4px 12px rgba(0,0,0,0.2);
+    --radius: 12px;
     --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -24,7 +22,7 @@ const styles = `
   .pp-root {
     min-height: 100vh;
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
     padding: 48px 24px 80px;
   }
@@ -37,13 +35,13 @@ const styles = `
   /* ── Project header ── */
   .pp-header {
     padding-bottom: 24px;
-    border-bottom: 1.5px solid var(--border);
+    border-bottom: 1px solid var(--border);
     margin-bottom: 36px;
   }
 
   .pp-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
@@ -52,26 +50,26 @@ const styles = `
   }
 
   .pp-header p {
-    font-size: 0.92rem;
+    font-size: 1rem;
     color: var(--ink-muted);
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.6;
   }
 
   /* ── Section label ── */
   .section-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-muted);
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   /* ── Community card ── */
   .community-section {
     background: var(--surface);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow: hidden;
@@ -79,56 +77,55 @@ const styles = `
 
   /* ── Messages feed ── */
   .messages-feed {
-    height: 360px;
+    height: 400px;
     overflow-y: auto;
-    padding: 20px 24px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
     scroll-behavior: smooth;
   }
 
-  .messages-feed::-webkit-scrollbar { width: 4px; }
+  .messages-feed::-webkit-scrollbar { width: 6px; }
   .messages-feed::-webkit-scrollbar-track { background: transparent; }
-  .messages-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .messages-feed::-webkit-scrollbar-thumb { background: #3A3A3F; border-radius: 4px; }
 
   /* ── Message item ── */
   .message-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
 
   .message-author {
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-muted);
   }
 
   .message-bubble {
-    background: var(--bg);
+    background: #25252A;
     border: 1px solid var(--border);
-    border-radius: 0 8px 8px 8px;
-    padding: 10px 14px;
+    border-radius: 0 12px 12px 12px;
+    padding: 12px 16px;
     display: inline-flex;
     flex-direction: column;
-    gap: 10px;
-    max-width: 100%;
+    gap: 12px;
+    max-width: 80%;
   }
 
   .message-text {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--ink);
-    font-weight: 300;
-    line-height: 1.55;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   .message-img {
     width: 100%;
-    max-width: 260px;
-    border-radius: 7px;
+    max-width: 320px;
+    border-radius: 8px;
     border: 1px solid var(--border);
     display: block;
     object-fit: cover;
@@ -145,13 +142,13 @@ const styles = `
     color: var(--ink-muted);
   }
 
-  .feed-empty .empty-icon { font-size: 1.6rem; opacity: 0.4; }
-  .feed-empty p { font-size: 0.85rem; font-weight: 300; }
+  .feed-empty .empty-icon { font-size: 2rem; opacity: 0.3; margin-bottom: 8px; }
+  .feed-empty p { font-size: 0.95rem; font-weight: 400; }
 
   /* ── Composer ── */
   .composer {
-    border-top: 1.5px solid var(--border);
-    background: var(--bg);
+    border-top: 1px solid var(--border);
+    background: #111114;
   }
 
   .composer-text-row {
@@ -164,11 +161,11 @@ const styles = `
     background: transparent;
     border: none;
     outline: none;
-    padding: 14px 18px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
+    padding: 16px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
     color: var(--ink);
-    font-weight: 300;
+    font-weight: 400;
   }
 
   .composer-input::placeholder {
@@ -181,25 +178,25 @@ const styles = `
     background: var(--accent);
     color: #fff;
     border: none;
-    padding: 14px 22px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    padding: 0 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     cursor: pointer;
     transition: background var(--transition);
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     align-self: stretch;
   }
 
   .btn-post:hover { background: var(--accent-hover); }
-  .btn-post:active { background: #8d2c11; }
+  .btn-post:active { background: #5B21B6; }
 
   .btn-post svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     transform: rotate(-35deg);
     margin-bottom: 1px;
   }
@@ -208,34 +205,34 @@ const styles = `
   .composer-attach-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 18px 10px;
-    border-top: 1px solid var(--border);
+    gap: 12px;
+    padding: 10px 24px 14px;
+    border-top: 1px solid #2A2A2F;
   }
 
   .file-label {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
+    gap: 8px;
+    font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     color: var(--ink-muted);
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
     border: 1px solid var(--border);
-    transition: color var(--transition), border-color var(--transition), background var(--transition);
+    transition: all var(--transition);
     user-select: none;
   }
 
   .file-label:hover {
-    color: var(--accent);
+    color: #fff;
     border-color: var(--accent);
-    background: rgba(200,68,26,0.05);
+    background: rgba(124, 58, 237, 0.1);
   }
 
-  .file-label svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .file-label svg { width: 14px; height: 14px; flex-shrink: 0; }
 
   .file-input-hidden { display: none; }
 
@@ -247,30 +244,35 @@ const styles = `
   }
 
   .image-preview {
-    height: 42px;
-    width: 42px;
+    height: 48px;
+    width: 48px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 6px;
     border: 1px solid var(--border);
     display: block;
   }
 
   .preview-remove {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    width: 17px;
-    height: 17px;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: var(--accent);
+    background: #EF4444;
     color: #fff;
     border: none;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     padding: 0;
+    transition: background var(--transition);
+  }
+
+  .preview-remove:hover {
+    background: #DC2626;
   }
 
   /* ── Loading ── */
@@ -279,7 +281,7 @@ const styles = `
     align-items: center;
     justify-content: center;
     min-height: 60vh;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.1rem;
     color: var(--ink-muted);
     letter-spacing: 0.04em;

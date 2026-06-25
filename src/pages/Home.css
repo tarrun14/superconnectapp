@@ -5,12 +5,13 @@
 
 .navbar {
   height: 60px;
-  background: #111;
-  color: white;
+  background: #111114;
+  color: #F4F4F5;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  border-bottom: 1px solid #2A2A2F;
 }
 
 .main-container {
@@ -19,10 +20,11 @@
 
 .sidebar {
   width: 200px;
-  background: #1a1a1a;
-  color: white;
+  background: #1A1A1F;
+  color: #F4F4F5;
   padding: 20px;
   height: 100vh;
+  border-right: 1px solid #2A2A2F;
 }
 
 .feed-container {
@@ -36,11 +38,12 @@
 }
 
 .post-card {
-  background: #222;
-  color: white;
+  background: #1A1A1F;
+  color: #F4F4F5;
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 10px;
+  border: 1px solid #2A2A2F;
 }
 
 .post-image {

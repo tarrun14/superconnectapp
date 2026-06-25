@@ -119,19 +119,25 @@ export default function CreatePost({ onPostCreated }) {
           width: "100%",
           padding: "16px",
           borderRadius: "8px",
-          border: "1.5px solid var(--border)",
+          border: "1px solid var(--border)",
           background: "var(--bg)",
-          fontFamily: "inherit",
+          fontFamily: "'Inter', sans-serif",
           fontSize: "0.95rem",
           color: "var(--ink)",
           resize: "none",
           minHeight: "100px",
           outline: "none",
-          transition: "border-color 200ms ease",
+          transition: "border-color 200ms ease, box-shadow 200ms ease",
           boxSizing: "border-box"
         }}
-        onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
-        onBlur={(e) => e.target.style.borderColor = "var(--border)"}
+        onFocus={(e) => {
+          e.target.style.borderColor = "var(--accent)";
+          e.target.style.boxShadow = "0 0 0 3px rgba(124, 58, 237, 0.15)";
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = "var(--border)";
+          e.target.style.boxShadow = "none";
+        }}
       />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", flexWrap: "wrap", gap: "16px" }}>
@@ -144,14 +150,16 @@ export default function CreatePost({ onPostCreated }) {
               padding: "8px 12px",
               borderRadius: "6px",
               border: "1px solid var(--border)",
-              background: "var(--surface)",
+              background: "var(--bg)",
               color: "var(--ink)",
-              fontFamily: "inherit",
+              fontFamily: "'Inter', sans-serif",
               fontSize: "0.85rem",
               cursor: "pointer",
               outline: "none",
               transition: "border-color 200ms ease"
             }}
+            onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
+            onBlur={(e) => e.target.style.borderColor = "var(--border)"}
           >
             <option value="Discussion">Discussion</option>
             <option value="Question">Question</option>
@@ -168,14 +176,16 @@ export default function CreatePost({ onPostCreated }) {
               padding: "8px 12px",
               borderRadius: "6px",
               border: "1px solid var(--border)",
-              background: "var(--surface)",
+              background: "var(--bg)",
               color: "var(--ink)",
-              fontFamily: "inherit",
+              fontFamily: "'Inter', sans-serif",
               fontSize: "0.85rem",
               cursor: "pointer",
               outline: "none",
               transition: "border-color 200ms ease"
             }}
+            onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
+            onBlur={(e) => e.target.style.borderColor = "var(--border)"}
           >
             <option value="Design">Design</option>
             <option value="Technology">Technology</option>
@@ -196,14 +206,15 @@ export default function CreatePost({ onPostCreated }) {
           cursor: "pointer",
           fontSize: "0.9rem",
           fontWeight: "500",
+          fontFamily: "'Inter', sans-serif",
           padding: "8px 12px",
           borderRadius: "6px",
-          border: "1px solid transparent",
+          border: "1px dashed transparent",
           transition: "all 200ms ease"
         }}
         onMouseOver={(e) => {
           e.currentTarget.style.color = "var(--accent)";
-          e.currentTarget.style.backgroundColor = "rgba(200,68,26,0.05)";
+          e.currentTarget.style.backgroundColor = "rgba(124, 58, 237, 0.08)";
         }}
         onMouseOut={(e) => {
           e.currentTarget.style.color = "var(--ink-muted)";
@@ -236,12 +247,15 @@ export default function CreatePost({ onPostCreated }) {
             color: "#fff",
             border: "none",
             fontWeight: "600",
+            fontFamily: "'Inter', sans-serif",
             cursor: loading ? "not-allowed" : "pointer",
             transition: "background 200ms ease",
             display: "inline-flex",
             alignItems: "center",
             gap: "8px"
           }}
+          onMouseOver={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--accent-hover)"; }}
+          onMouseOut={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--accent)"; }}
         >
           {loading ? "Posting..." : "Post"}
         </button>
