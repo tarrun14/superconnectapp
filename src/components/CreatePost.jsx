@@ -103,9 +103,9 @@ export default function CreatePost({ onPostCreated }) {
 
   return (
     <div style={{
-      marginBottom: "32px",
+      marginBottom: "24px",
       background: "var(--surface)",
-      border: "1.5px solid var(--border)",
+      border: "1px solid var(--border)",
       borderRadius: "12px",
       padding: "20px",
       boxShadow: "var(--shadow)"

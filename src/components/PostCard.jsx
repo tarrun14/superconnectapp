@@ -276,9 +276,9 @@ export default function PostCard({ post, onDelete }) {
       </div>
 
       {/* COMMENTS */}
-      <p className="view-comments-btn" onClick={toggleComments}>
-        {showComments ? "Hide comments" : "Show comments"}
-      </p>
+      <button className="view-comments-btn" onClick={toggleComments}>
+        💬 {showComments ? "Hide comments" : "Show comments"}
+      </button>
 
       {showComments && (
         <>

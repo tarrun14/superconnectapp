@@ -22,14 +22,21 @@ const styles = `
   }
 
   .page-inner {
-    max-width: 1200px; /* Wider for 3 column grid */
+    max-width: 1100px;
     margin: 0 auto;
+  }
+
+  .page-subtitle {
+    color: var(--ink-muted);
+    font-size: 15px;
+    margin-top: 4px;
   }
 
   .page-header {
     display: flex;
-    align-items: baseline;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
@@ -42,10 +49,6 @@ const styles = `
     letter-spacing: -0.02em;
     line-height: 1;
     color: var(--ink);
-  }
-
-  .page-header .dot {
-    display: none; /* Removed the dot */
   }
 
   /* 🔥 3 Column Grid for Project Cards */
@@ -90,7 +93,7 @@ const styles = `
 
   .project-cover {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
     background: var(--bg);
   }
@@ -117,9 +120,9 @@ const styles = `
   .tag-live { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
 
   .project-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--ink);
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
@@ -127,15 +130,19 @@ const styles = `
   }
 
   .project-desc {
-    font-size: 0.9rem;
+    font-size: 13px;
     color: var(--ink-muted);
     margin-bottom: 16px;
     line-height: 1.5;
     flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .project-owner {
-    font-size: 13px; /* As requested */
+    font-size: 13px;
     color: var(--ink-muted);
     margin-bottom: 16px;
     display: flex;
@@ -145,15 +152,16 @@ const styles = `
 
   .btn-follow {
     background: transparent;
-    border: 1.5px solid var(--accent);
+    border: 1px solid var(--accent);
     color: var(--accent);
-    padding: 6px 14px;
+    padding: 8px 14px;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     margin-top: auto;
+    width: 100%;
   }
 
   .btn-follow:hover {
@@ -260,7 +268,7 @@ export default function ProjectHub() {
         <div className="page-inner">
           <div className="page-header">
             <h2>Project Hub</h2>
-            <div className="dot" />
+            <p className="page-subtitle">Discover and follow projects</p>
           </div>
 
           {loading ? (

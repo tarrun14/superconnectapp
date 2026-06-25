@@ -22,20 +22,20 @@ const styles = `
     background: var(--bg);
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    display: flex;
-    justify-content: center;
-    padding: 80px 24px 80px;
   }
 
   .home-inner {
     width: 100%;
-    max-width: 1000px;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px;
   }
 
   .home-header {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     padding-bottom: 24px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
@@ -155,7 +155,7 @@ const Home = () => {
           {/* Header */}
           <div className="home-header">
             <h2>Dashboard</h2>
-            <div className="header-dot" />
+            <span style={{ color: '#A1A1AA', fontSize: '14px' }}>What's happening in the community</span>
           </div>
 
           {/* 🔥 SEARCH & FILTERS */}

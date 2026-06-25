@@ -28,7 +28,7 @@ const styles = `
   }
 
   .profile-inner {
-    max-width: 1000px;
+    max-width: 760px;
     margin: 0 auto;
   }
 
@@ -55,12 +55,13 @@ const styles = `
   }
 
   .section-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
     text-transform: uppercase;
-    color: var(--ink-muted);
     margin-bottom: 16px;
+    border-left: 3px solid #7C3AED;
+    padding-left: 8px;
   }
 
   .create-section {
@@ -94,6 +95,7 @@ const styles = `
   
   .form-field:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
   }
   
   .form-field::placeholder {
@@ -220,16 +222,72 @@ const styles = `
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 32px;
     box-shadow: var(--shadow);
     display: flex;
-    align-items: center;
-    gap: 24px;
+    flex-direction: column;
+    overflow: hidden;
   }
-  .profile-avatar {
+  .profile-banner {
+    position: relative;
+    height: 100px;
+    background: linear-gradient(135deg, #1A1A1F, #2D1B69);
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+  }
+  .banner-edit-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .profile-banner:hover .banner-edit-btn {
+    opacity: 1;
+  }
+  .banner-edit-btn:hover {
+    background: rgba(0,0,0,0.7);
+  }
+  .avatar-wrapper {
+    position: relative;
     width: 88px;
     height: 88px;
     border-radius: 50%;
+    margin-top: -40px;
+    margin-left: 24px;
+    border: 3px solid #0F0F11;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+    font-size: 14px;
+  }
+  .avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+  }
+  .profile-avatar {
+    width: 100%;
+    height: 100%;
     background: var(--accent);
     color: white;
     font-family: 'Inter', sans-serif;
@@ -238,7 +296,6 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
   }
   .profile-details {
     display: flex;
@@ -284,6 +341,11 @@ export default function Profile() {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const navigate = useNavigate();
 
@@ -313,6 +375,7 @@ export default function Profile() {
         }
         
         await fetchProjects(user.id);
+        await fetchFollowStats(user.id);
       }
     } catch (err) {
       console.error("Error fetching user:", err.message);
@@ -330,6 +393,21 @@ export default function Profile() {
 
     if (error) console.error("Error fetching projects:", error.message);
     else setProjects(data || []);
+  };
+
+  const fetchFollowStats = async (userId) => {
+    const { count: followers } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("following_id", userId);
+
+    const { count: following } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", userId);
+
+    setFollowersCount(followers || 0);
+    setFollowingCount(following || 0);
   };
 
   const handleSaveProfile = async () => {
@@ -391,6 +469,58 @@ export default function Profile() {
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleDirectBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user) return;
+    setIsUploadingBanner(true);
+    
+    const fileName = `banner-${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file);
+
+    if (uploadError) {
+      alert("Banner upload failed: " + uploadError.message);
+      setIsUploadingBanner(false);
+      return;
+    }
+    
+    const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+    const bannerUrl = data.publicUrl;
+    
+    const { error } = await supabase.from("profiles").update({ banner_url: bannerUrl }).eq("id", user.id);
+    if (error) alert("Error saving banner: " + error.message);
+    else setProfileData(prev => ({ ...prev, banner_url: bannerUrl }));
+    
+    setIsUploadingBanner(false);
+  };
+
+  const handleDirectAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user) return;
+    setIsUploadingAvatar(true);
+    
+    const fileName = `avatar-${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file);
+
+    if (uploadError) {
+      alert("Avatar upload failed: " + uploadError.message);
+      setIsUploadingAvatar(false);
+      return;
+    }
+    
+    const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+    const avatarUrl = data.publicUrl;
+    
+    const { error } = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", user.id);
+    if (error) alert("Error saving avatar: " + error.message);
+    else {
+      setProfileData(prev => ({ ...prev, avatar_url: avatarUrl }));
+      setAvatarPreview(null);
+      setAvatarFile(null);
+    }
+    
+    setIsUploadingAvatar(false);
   };
 
   const createProject = async () => {
@@ -488,16 +618,29 @@ export default function Profile() {
             </div>
             
             <div className="profile-card">
-               <div className="profile-avatar" style={{ overflow: 'hidden' }}>
-                 {(avatarPreview || profileData?.avatar_url) ? (
-                   <img src={avatarPreview || profileData?.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                 ) : (
-                   profileData?.name ? profileData.name.charAt(0).toUpperCase() : "U"
-                 )}
+               <div className="profile-banner" style={profileData?.banner_url ? { backgroundImage: `url(${profileData.banner_url})` } : {}}>
+                 <label className="banner-edit-btn">
+                   <span>📷 {isUploadingBanner ? '...' : ''}</span>
+                   <input type="file" accept="image/*" className="file-input-hidden" onChange={handleDirectBannerUpload} disabled={isUploadingBanner} />
+                 </label>
+               </div>
+               
+               <div className="avatar-wrapper">
+                 <div className="profile-avatar">
+                   {(avatarPreview || profileData?.avatar_url) ? (
+                     <img src={avatarPreview || profileData?.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                   ) : (
+                     profileData?.name ? profileData.name.charAt(0).toUpperCase() : "U"
+                   )}
+                 </div>
+                 <label className="avatar-overlay">
+                   <span>📷 {isUploadingAvatar ? '...' : ''}</span>
+                   <input type="file" accept="image/*" className="file-input-hidden" onChange={handleDirectAvatarUpload} disabled={isUploadingAvatar} />
+                 </label>
                </div>
                
                {isEditingProfile ? (
-                 <div className="profile-details" style={{ flex: 1 }}>
+                 <div className="profile-details" style={{ flex: 1, padding: '16px 24px 24px 24px' }}>
                    <label className="file-label" style={{ marginBottom: '12px', alignSelf: 'flex-start' }}>
                      + Change Avatar
                      <input type="file" accept="image/*" className="file-input-hidden" onChange={handleAvatarChange} />
@@ -510,17 +653,34 @@ export default function Profile() {
                      <button className="btn-create" onClick={handleSaveProfile} disabled={savingProfile}>
                        {savingProfile ? "Saving..." : "Save"}
                      </button>
-                     <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer' }}>
+                     <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer', color: 'var(--ink)' }}>
                        Cancel
                      </button>
                    </div>
                  </div>
                ) : (
-                 <div className="profile-details">
+                 <div className="profile-details" style={{ padding: '16px 24px 24px 24px' }}>
                    <h3>{profileData?.name || "User"}</h3>
                    <p className="profile-email">{profileData?.email}</p>
                    {profileData?.occupation && <p className="profile-meta">💼 {profileData.occupation}</p>}
                    {profileData?.age && <p className="profile-meta">🎂 {profileData.age} years old</p>}
+                   
+                   <div className="profile-stats" style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{followersCount}</span>
+                       <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Followers</span>
+                     </div>
+                     <div style={{ width: '1px', height: '32px', background: 'var(--border)' }}></div>
+                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{followingCount}</span>
+                       <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Following</span>
+                     </div>
+                     <div style={{ width: '1px', height: '32px', background: 'var(--border)' }}></div>
+                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{projects.length}</span>
+                       <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Projects</span>
+                     </div>
+                   </div>
                  </div>
                )}
             </div>

@@ -26,22 +26,23 @@ async function encryptMessage(plaintext, keyMaterial) {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encoded = strToBytes(plaintext);
     const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
-    // combine iv + ciphertext, encode as base64
-    const combined = new Uint8Array(iv.byteLength + encrypted.byteLength);
-    combined.set(iv, 0);
-    combined.set(new Uint8Array(encrypted), iv.byteLength);
-    return btoa(String.fromCharCode(...combined));
+    
+    // Return iv and ciphertext separately encoded as base64
+    const encryptedContent = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+    const ivString = btoa(String.fromCharCode(...iv));
+    
+    return { encryptedContent, ivString };
   } catch (e) {
     console.error("Encrypt error:", e);
-    return plaintext; // fallback: store plain if crypto fails
+    return { encryptedContent: plaintext, ivString: "" }; // fallback: store plain if crypto fails
   }
 }
 
-async function decryptMessage(ciphertext, keyMaterial) {
+async function decryptMessage(ciphertext, ivString, keyMaterial) {
   try {
-    const combined = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
-    const iv = combined.slice(0, 12);
-    const data = combined.slice(12);
+    if (!ivString) return ciphertext; // Fallback for old plain-text messages or messages without IV
+    const iv = Uint8Array.from(atob(ivString), (c) => c.charCodeAt(0));
+    const data = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
     const key = await getCryptoKey(keyMaterial);
     const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
     return bytesToStr(new Uint8Array(decrypted));
@@ -111,7 +112,7 @@ const styles = `
   .chat-user-item {
     padding: 16px 24px;
     cursor: pointer;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid #2A2A2F;
     transition: background 200ms ease;
     display: flex;
     align-items: center;
@@ -197,11 +198,17 @@ const styles = `
     border-bottom-left-radius: 4px;
   }
 
+  .message-timestamp {
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
   /* ── Input Area ── */
   .input-area {
     padding: 16px 24px;
     background: var(--surface);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid #2A2A2F;
     display: flex;
     gap: 12px;
   }
@@ -351,7 +358,7 @@ export default function Messages() {
     const decrypted = await Promise.all(
       (data || []).map(async (msg) => ({
         ...msg,
-        content: await decryptMessage(msg.content, ENCRYPTION_KEY),
+        content: await decryptMessage(msg.content, msg.iv, ENCRYPTION_KEY),
       }))
     );
 
@@ -362,13 +369,14 @@ export default function Messages() {
     if (!text.trim() || !selectedUser || !user) return;
 
     // 🔐 Encrypt before storing
-    const encryptedContent = await encryptMessage(text, ENCRYPTION_KEY);
+    const { encryptedContent, ivString } = await encryptMessage(text, ENCRYPTION_KEY);
 
     const { error } = await supabase.from("messages").insert([
       {
         sender_id: user.id,
         receiver_id: selectedUser.id,
         content: encryptedContent,
+        iv: ivString,
       },
     ]);
 
@@ -445,6 +453,9 @@ export default function Messages() {
                       <div className="message-bubble">
                         {msg.content}
                       </div>
+                      <span className="message-timestamp">
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   ))}
                 </div>

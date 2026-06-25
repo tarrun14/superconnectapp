@@ -5,13 +5,15 @@
   border-radius: 12px;
   margin-bottom: 24px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-  border: 1px solid var(--border);
+  border: 1px solid #2A2A2F;
+  border-left: 1px solid #2A2A2F;
   transition: all 0.2s ease;
 }
 
 .post-card:hover {
   transform: translateY(-2px);
   border-color: #7C3AED;
+  border-left: 4px solid #7C3AED;
   box-shadow: 0 8px 24px rgba(124,58,237,0.1);
 }
 
@@ -98,28 +100,17 @@
 /* IMAGE */
 .post-image-container {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  overflow-x: auto;
   margin-top: 16px;
-  padding-bottom: 8px;
 }
 
 .post-image-container img {
-  width: 250px;
-  height: 250px;
+  width: 100%;
+  max-height: 400px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.post-image-container::-webkit-scrollbar {
-  height: 4px;
-}
-
-.post-image-container::-webkit-scrollbar-thumb {
-  background: #2A2A2F;
-  border-radius: 10px;
 }
 
 /* ACTIONS */
@@ -153,15 +144,21 @@
 
 /* COMMENTS */
 .view-comments-btn {
-  font-size: 0.8rem;
-  color: var(--ink-muted);
+  font-size: 13px;
+  color: #A1A1AA;
   margin-top: 16px;
   cursor: pointer;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: color 0.2s ease;
+  font-family: inherit;
 }
 
 .view-comments-btn:hover {

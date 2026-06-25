@@ -22,8 +22,14 @@ const styles = `
   }
 
   .page-inner {
-    max-width: 1000px;
+    max-width: 900px;
     margin: 0 auto;
+  }
+
+  .page-subtitle {
+    color: var(--ink-muted);
+    font-size: 15px;
+    margin-top: 4px;
   }
 
   .page-header {
@@ -49,34 +55,56 @@ const styles = `
   }
 
   .section-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
     text-transform: uppercase;
-    color: var(--ink-muted);
     margin: 32px 0 16px;
+    border-left: 3px solid var(--accent);
+    padding-left: 8px;
   }
 
-  .list-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .card-new {
+    background: #1A1A1F;
+    border: 1px solid #2A2A2F;
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    font-size: 1.05rem;
-    font-weight: 500;
-    font-family: 'Inter', sans-serif;
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
   }
-
-  .list-card:hover {
+  
+  .card-new:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+  }
+
+  .unfollow-btn {
+    margin-top: 16px;
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #EF4444;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  
+  .unfollow-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #EF4444;
   }
 
   .empty-msg {
@@ -153,7 +181,6 @@ export default function Following() {
     setFollowing(merged);
   };
 
-  // 🔥 FETCH FOLLOWED PROJECTS (NEW)
   const fetchProjectFollowing = async (userId) => {
     const { data, error } = await supabase
       .from("project_followers")
@@ -174,15 +201,43 @@ export default function Following() {
 
     const { data: projects } = await supabase
       .from("projects")
-      .select("id, title")
+      .select("id, title, image_url, user_id")
       .in("id", ids);
 
-    const merged = data.map((p) => ({
-      ...p,
-      project: projects?.find((proj) => proj.id === p.project_id),
-    }));
+    let creators = [];
+    if (projects && projects.length > 0) {
+      const uids = projects.map(p => p.user_id).filter(Boolean);
+      if (uids.length > 0) {
+        const { data: cData } = await supabase.from("profiles").select("id, name").in("id", uids);
+        creators = cData || [];
+      }
+    }
+
+    const merged = data.map((p) => {
+      const proj = projects?.find((proj) => proj.id === p.project_id);
+      const creator = creators.find(c => c.id === proj?.user_id);
+      return {
+        ...p,
+        project: proj,
+        creator: creator
+      };
+    });
 
     setProjectFollowing(merged);
+  };
+
+  const unfollowUser = async (e, followingId) => {
+    e.stopPropagation();
+    if (!user) return;
+    await supabase.from("follows").delete().match({ follower_id: user.id, following_id: followingId });
+    setFollowing(prev => prev.filter(f => f.following_id !== followingId));
+  };
+
+  const unfollowProject = async (e, projectId) => {
+    e.stopPropagation();
+    if (!user) return;
+    await supabase.from("project_followers").delete().match({ user_id: user.id, project_id: projectId });
+    setProjectFollowing(prev => prev.filter(p => p.project_id !== projectId));
   };
 
   return (
@@ -190,9 +245,9 @@ export default function Following() {
       <style>{styles}</style>
       <div className="page-root">
         <div className="page-inner">
-          <div className="page-header">
+          <div className="page-header" style={{ flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
             <h2>Following</h2>
-            <div className="dot" />
+            <p className="page-subtitle">People and projects you follow</p>
           </div>
 
           {/* 🔥 USERS */}
@@ -206,22 +261,28 @@ export default function Following() {
           ) : following.length === 0 ? (
             <p className="empty-msg">No users followed</p>
           ) : (
-            following.map((f, index) => (
-              <div
-                key={index}
-                className="list-card"
-                onClick={() => navigate(`/user/${f.following_id}`)}
-              >
-                {f.profiles?.avatar_url ? (
-                  <img src={f.profiles.avatar_url} alt="avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>
-                    {f.profiles?.name ? f.profiles.name.charAt(0).toUpperCase() : "U"}
-                  </div>
-                )}
-                {f.profiles?.name || "User"}
-              </div>
-            ))
+            <div className="grid-container">
+              {following.map((f, index) => (
+                <div
+                  key={index}
+                  className="card-new"
+                  onClick={() => navigate(`/user/${f.following_id}`)}
+                >
+                  {f.profiles?.avatar_url ? (
+                    <img src={f.profiles.avatar_url} alt="avatar" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', marginBottom: '12px' }} />
+                  ) : (
+                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' }}>
+                      {f.profiles?.name ? f.profiles.name.charAt(0).toUpperCase() : "U"}
+                    </div>
+                  )}
+                  <div style={{ fontWeight: '600', fontSize: '1.1rem' }}>{f.profiles?.name || "User"}</div>
+                  <div style={{ color: 'var(--ink-muted)', fontSize: '13px', marginTop: '4px' }}>{f.profiles?.occupation || "Member"}</div>
+                  <button className="unfollow-btn" onClick={(e) => unfollowUser(e, f.following_id)}>
+                    Unfollow
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
 
           {/* 🔥 PROJECTS */}
@@ -235,15 +296,28 @@ export default function Following() {
           ) : projectFollowing.length === 0 ? (
             <p className="empty-msg">No projects followed</p>
           ) : (
-            projectFollowing.map((p, index) => (
-              <div
-                key={index}
-                className="list-card"
-                onClick={() => navigate(`/project/${p.project_id}`)}
-              >
-                🚀 {p.project?.title || "Project"}
-              </div>
-            ))
+            <div className="grid-container">
+              {projectFollowing.map((p, index) => (
+                <div
+                  key={index}
+                  className="card-new"
+                  onClick={() => navigate(`/project/${p.project_id}`)}
+                >
+                  {p.project?.image_url ? (
+                    <img src={p.project.image_url} alt="cover" style={{ width: '100%', height: '80px', borderRadius: '8px', objectFit: 'cover', marginBottom: '12px' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '80px', borderRadius: '8px', background: 'rgba(124, 58, 237, 0.1)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    </div>
+                  )}
+                  <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{p.project?.title || "Project"}</div>
+                  <div style={{ color: 'var(--ink-muted)', fontSize: '13px', marginTop: '4px' }}>by {p.creator?.name || "User"}</div>
+                  <button className="unfollow-btn" onClick={(e) => unfollowProject(e, p.project_id)}>
+                    Unfollow Project
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
