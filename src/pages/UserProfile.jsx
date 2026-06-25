@@ -277,6 +277,14 @@ export default function UserProfile() {
       await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: id });
       setIsFollowingUser(true);
       setFollowersCount(prev => prev + 1);
+      
+      // Add notification
+      await supabase.from("notifications").insert({
+        user_id: id,
+        type: 'follow',
+        from_user_id: currentUser.id,
+        message: 'started following you'
+      });
     }
   };
 

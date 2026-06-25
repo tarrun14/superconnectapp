@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
@@ -24,12 +25,62 @@ const styles = `
     background: var(--bg);
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    padding: 48px 24px 80px;
+    padding-bottom: 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Banner ── */
+  .project-banner {
+    position: relative;
+    width: 100%;
+    background: #1A1A1F;
+  }
+  
+  .project-banner img, .project-banner .placeholder-banner {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+  }
+  
+  .banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(to bottom, transparent, #0F0F11);
   }
 
   .pp-inner {
     max-width: 1000px;
     margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+    background: #0F0F1180;
+  }
+  
+  .pp-inner::before, .pp-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .pp-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .pp-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   /* ── Project header ── */
@@ -37,16 +88,51 @@ const styles = `
     padding-bottom: 24px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 36px;
+    position: relative;
   }
 
-  .pp-header h2 {
+  .project-title {
     font-family: 'Inter', sans-serif;
     font-size: 32px;
     font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    color: var(--ink);
-    margin-bottom: 10px;
+    color: #fff;
+    margin-top: -60px;
+    position: relative;
+    z-index: 10;
+    margin-bottom: 16px;
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .status-badge {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .creator-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+
+  .creator-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
   }
 
   .pp-header p {
@@ -54,6 +140,29 @@ const styles = `
     color: var(--ink-muted);
     font-weight: 400;
     line-height: 1.6;
+  }
+
+  .btn-follow {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-follow:hover {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  
+  .btn-follow.following {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
   }
 
   /* ── Section label ── */
@@ -93,26 +202,39 @@ const styles = `
   /* ── Message item ── */
   .message-item {
     display: flex;
+    gap: 16px;
+    background: #151518;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .message-author-col {
+    flex-shrink: 0;
+  }
+  
+  .message-content-col {
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .message-author {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--ink-muted);
+    color: var(--ink);
   }
 
-  .message-bubble {
-    background: #25252A;
-    border: 1px solid var(--border);
-    border-radius: 0 12px 12px 12px;
-    padding: 12px 16px;
-    display: inline-flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 80%;
+  .message-timestamp {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
   }
 
   .message-text {
@@ -147,13 +269,15 @@ const styles = `
 
   /* ── Composer ── */
   .composer {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid #2A2A2F;
     background: #111114;
   }
 
   .composer-text-row {
     display: flex;
     align-items: center;
+    padding: 16px;
+    gap: 16px;
   }
 
   .composer-input {
@@ -161,7 +285,6 @@ const styles = `
     background: transparent;
     border: none;
     outline: none;
-    padding: 16px 24px;
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     color: var(--ink);
@@ -206,8 +329,7 @@ const styles = `
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 24px 14px;
-    border-top: 1px solid #2A2A2F;
+    padding: 0 16px 16px;
   }
 
   .file-label {
@@ -297,6 +419,7 @@ export default function ProjectPage() {
   const [msgText, setMsgText] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const feedRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -323,8 +446,34 @@ export default function ProjectPage() {
 
   const fetchProject = async () => {
     const { data } = await supabase
-      .from("projects").select("*").eq("id", id).single();
+      .from("projects").select("*, profiles(name, avatar_url)").eq("id", id).single();
     setProject(data);
+    
+    // Check follow status (optional, fails gracefully)
+    if (user) {
+      const { data: followData } = await supabase
+        .from("project_followers")
+        .select("*")
+        .eq("project_id", id)
+        .eq("user_id", user.id)
+        .single();
+      if (followData) setIsFollowing(true);
+    }
+  };
+
+  const toggleFollow = async () => {
+    if (!user) return;
+    try {
+      if (isFollowing) {
+        await supabase.from("project_followers").delete().eq("project_id", id).eq("user_id", user.id);
+        setIsFollowing(false);
+      } else {
+        await supabase.from("project_followers").insert([{ project_id: id, user_id: user.id }]);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchMessages = async () => {
@@ -392,11 +541,44 @@ export default function ProjectPage() {
     <>
       <style>{styles}</style>
       <div className="pp-root">
-        <div className="pp-inner">
-          {project ? (
-            <>
+        <BackgroundParticles variant="split" />
+        
+        {project ? (
+          <>
+            <div className="project-banner">
+              {project.image_url ? (
+                <img src={project.image_url} alt="cover" />
+              ) : (
+                <div className="placeholder-banner"></div>
+              )}
+              <div className="banner-overlay"></div>
+            </div>
+
+            <div className="pp-inner">
               <div className="pp-header">
-                <h2>{project.title}</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <h2 className="project-title">{project.title}</h2>
+                  {project.user_id !== user?.id && (
+                    <button className={`btn-follow ${isFollowing ? 'following' : ''}`} onClick={toggleFollow}>
+                      {isFollowing ? 'Following' : 'Follow Project'}
+                    </button>
+                  )}
+                </div>
+                
+                <div className="project-meta">
+                  {project.status && <span className="status-badge">{project.status}</span>}
+                  <div className="creator-info">
+                    {project.profiles?.avatar_url ? (
+                      <img src={project.profiles.avatar_url} alt="creator" className="creator-avatar" />
+                    ) : (
+                      <div className="creator-avatar" style={{ background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                        {project.profiles?.name ? project.profiles.name.charAt(0).toUpperCase() : "U"}
+                      </div>
+                    )}
+                    <span>{project.profiles?.name || 'Unknown User'}</span>
+                  </div>
+                </div>
+
                 {project.description && <p>{project.description}</p>}
               </div>
 
@@ -413,26 +595,27 @@ export default function ProjectPage() {
                   ) : (
                     messages.map((m) => (
                       <div key={m.id} className="message-item">
-                        <span className="message-author" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="message-author-col">
                           {m.profiles?.avatar_url ? (
-                            <img src={m.profiles.avatar_url} alt="avatar" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={m.profiles.avatar_url} alt="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' }}>
                               {m.profiles?.name ? m.profiles.name.charAt(0).toUpperCase() : "U"}
                             </div>
                           )}
-                          {m.profiles?.name || "User"}
-                        </span>
-                        <div className="message-bubble">
+                        </div>
+                        <div className="message-content-col">
+                          <div className="message-header">
+                            <span className="message-author">{m.profiles?.name || "User"}</span>
+                            <span className="message-timestamp">
+                              {new Date(m.created_at).toLocaleDateString()} {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
                           {m.message && (
                             <span className="message-text">{m.message}</span>
                           )}
                           {m.image_url && (
-                            <img
-                              src={m.image_url}
-                              alt="post"
-                              className="message-img"
-                            />
+                            <img src={m.image_url} alt="post" className="message-img" />
                           )}
                         </div>
                       </div>
@@ -485,11 +668,13 @@ export default function ProjectPage() {
                   </div>
                 </div>
               </div>
-            </>
-          ) : (
+            </div>
+          </>
+        ) : (
+          <div className="pp-inner">
             <SkeletonLoader type="page" />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

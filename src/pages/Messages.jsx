@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 // ── Simple XOR-based encryption using a shared key ──────────────────────────
 // We use a simple but effective approach: CryptoJS-style using Web Crypto API
@@ -82,6 +83,29 @@ const styles = `
     height: 75vh;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Applying gradient overlay inside the wrapper for visual separation */
+  .messages-inner::before, .messages-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: 10; /* high z-index inside messages to show over the content if needed, but not block clicks */
+  }
+  
+  .messages-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .messages-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   /* ── Sidebar (Chats list) ── */
@@ -258,6 +282,59 @@ const styles = `
     color: var(--ink-muted);
     font-style: italic;
   }
+
+  @media (max-width: 768px) {
+    .messages-root {
+      padding: 80px 12px 80px;
+    }
+    .messages-inner {
+      position: relative;
+    }
+    .chat-sidebar {
+      width: 100%;
+      border-right: none;
+    }
+    .chat-window {
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      background: var(--bg);
+    }
+    .chat-sidebar.hidden-mobile {
+      display: none;
+    }
+    .chat-window.hidden-mobile {
+      display: none;
+    }
+    .btn-back {
+      display: flex;
+      align-items: center;
+      background: transparent;
+      border: none;
+      color: var(--ink);
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-right: 8px;
+      padding: 4px;
+    }
+    .input-area {
+      flex-direction: column;
+    }
+    .btn-send {
+      width: 100%;
+      padding: 10px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .btn-back {
+      display: none;
+    }
+  }
 `;
 
 export default function Messages() {
@@ -388,15 +465,24 @@ export default function Messages() {
     setText("");
     fetchMessages(selectedUser.id);
     fetchChatUsers(user.id);
+    
+    // Add notification
+    await supabase.from("notifications").insert({
+      user_id: selectedUser.id,
+      type: 'message',
+      from_user_id: user.id,
+      message: 'sent you a message'
+    });
   };
 
   return (
     <>
       <style>{styles}</style>
       <div className="messages-root">
+        <BackgroundParticles variant="split" />
         <div className="messages-inner">
           {/* LEFT: Sidebar */}
-          <div className="chat-sidebar">
+          <div className={`chat-sidebar ${selectedUser ? 'hidden-mobile' : ''}`}>
             <div className="sidebar-header">
               <h3>Messages</h3>
             </div>
@@ -429,10 +515,11 @@ export default function Messages() {
           </div>
 
           {/* RIGHT: Chat Window */}
-          <div className="chat-window">
+          <div className={`chat-window ${!selectedUser ? 'hidden-mobile' : ''}`}>
             {selectedUser ? (
               <>
                 <div className="chat-header">
+                  <button className="btn-back" onClick={() => setSelectedUser(null)}>←</button>
                   {selectedUser.avatar_url ? (
                     <img src={selectedUser.avatar_url} alt="avatar" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (

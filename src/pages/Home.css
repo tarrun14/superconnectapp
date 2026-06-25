@@ -51,3 +51,18 @@
   margin-top: 10px;
   border-radius: 10px;
 }
+
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+  .sidebar, .right-panel {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #2A2A2F;
+  }
+  .feed-container {
+    padding: 12px;
+  }
+}

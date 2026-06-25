@@ -124,3 +124,20 @@ a {
 button, .btn, a {
   transition: all 0.2s ease;
 }
+
+/* =========================
+   RESPONSIVE DESIGN (Mobile)
+========================= */
+@media (max-width: 768px) {
+  .main-content,
+  .container {
+    padding: 12px; /* Reduce padding by ~40% */
+  }
+
+  .btn {
+    width: 100% !important; /* Full width buttons on mobile */
+    display: block;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+}

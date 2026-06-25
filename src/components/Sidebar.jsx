@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
@@ -173,13 +173,145 @@ const styles = `
     border-color: rgba(239, 68, 68, 0.3);
   }
 
+  /* ── Notifications ── */
+  .bell-btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all var(--transition);
+  }
+  .bell-btn:hover {
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--ink);
+  }
+  .bell-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #EF4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    background: #111114;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+  }
+  
+  .notifications-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .notifications-header h4 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  
+  .btn-mark-read {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .btn-mark-read:hover { text-decoration: underline; }
+
+  .notifications-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    color: inherit;
+    align-items: flex-start;
+  }
+  .notification-item:hover { background: rgba(124, 58, 237, 0.05); }
+  .notification-item.unread { background: rgba(124, 58, 237, 0.1); }
+  
+  .notification-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  
+  .notification-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .notification-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-muted);
+  }
+  .notification-text strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .notification-time {
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .notification-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 13px;
+  }
+
   /* ── Responsive ── */
   @media (max-width: 768px) {
     .navbar {
       padding: 0 16px;
+      justify-content: space-between;
     }
     .navbar-brand {
-      margin-right: 16px;
+      margin-right: auto; /* Push everything else to the right */
       gap: 6px;
     }
     .navbar-brand img {
@@ -188,16 +320,64 @@ const styles = `
     .brand-text {
       font-size: 1.2rem;
     }
-    .navbar-link {
-      padding: 8px 10px;
-      font-size: 0;
-      gap: 0;
+    
+    /* Hide normal nav and right section on mobile */
+    .navbar-nav, .navbar-right {
+      display: none;
     }
-    .navbar-link .nav-icon {
-      width: 18px;
-      height: 18px;
+
+    /* Show hamburger icon */
+    .mobile-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--ink);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      margin-left: 16px;
     }
-    .btn-logout span {
+
+    /* Mobile Dropdown Menu */
+    .mobile-menu {
+      position: absolute;
+      top: var(--nav-height);
+      left: 0;
+      right: 0;
+      background: #111114;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .mobile-menu .navbar-link {
+      padding: 12px 16px;
+      font-size: 1rem;
+      gap: 12px;
+      justify-content: flex-start;
+      border-radius: 8px;
+    }
+
+    .mobile-menu .btn-logout {
+      margin-top: 12px;
+      width: 100%;
+      justify-content: center;
+      padding: 12px;
+    }
+    
+    .mobile-menu .btn-logout span {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .mobile-menu-btn, .mobile-menu {
       display: none;
     }
   }
@@ -271,33 +451,92 @@ const navItems = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  
+  // Notifications State
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     const ensureProfileExists = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData?.session?.user;
+      const currentUser = sessionData?.session?.user;
       
-      if (user) {
+      if (currentUser) {
+        setUser(currentUser);
         // Check if profile exists
         const { error } = await supabase
           .from("profiles")
           .select("id")
-          .eq("id", user.id)
+          .eq("id", currentUser.id)
           .single();
 
         // If not found, insert one using Google Auth metadata
         if (error && error.code === 'PGRST116') {
           await supabase.from("profiles").insert([{
-            id: user.id,
-            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || "User",
-            email: user.email
+            id: currentUser.id,
+            name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || "User",
+            email: currentUser.email
           }]);
         }
+        
+        fetchNotifications(currentUser);
       }
     };
 
     ensureProfileExists();
   }, []);
+
+  const fetchNotifications = async (currentUser) => {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) { console.error("Notifications error:", error); return; }
+
+    if (data.length > 0) {
+      const fromUserIds = [...new Set(data.map(n => n.from_user_id))];
+      const { data: profiles } = await supabase.from('profiles').select('id, name, avatar_url').in('id', fromUserIds);
+
+      const enriched = data.map(n => ({
+        ...n,
+        profiles: profiles?.find(p => p.id === n.from_user_id)
+      }));
+
+      setNotifications(enriched);
+      setUnreadCount(enriched.filter(n => !n.is_read).length);
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (!user) return;
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+  };
+
+  const handleNotificationClick = async (notif) => {
+    setShowDropdown(false);
+    if (!notif.is_read) {
+      await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
+    
+    // Navigate based on type
+    if (notif.type === 'follow') navigate(`/user/${notif.from_user_id}`);
+    else if (notif.type === 'message') navigate(`/messages`);
+    else if (notif.project_id) navigate(`/project/${notif.project_id}`);
+    else navigate(`/home`);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -316,7 +555,7 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        {/* Center: Nav Links */}
+        {/* Center: Nav Links (Desktop) */}
         <div className="navbar-nav">
           {navItems.map(({ to, label, icon }) => (
             <Link
@@ -330,8 +569,66 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Right: Logout */}
-        <div className="navbar-right">
+        {/* Right: Notifications & Logout (Desktop) */}
+        <div className="navbar-right" style={{ position: 'relative' }}>
+          
+          {/* Bell Icon */}
+          <button className="bell-btn" onClick={() => {
+            setShowDropdown(!showDropdown);
+            if (!showDropdown && user) fetchNotifications(user); // refresh when opening
+          }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '20px', height: '20px'}}>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            {unreadCount > 0 && <span className="bell-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+          </button>
+
+          {/* Notifications Dropdown */}
+          {showDropdown && (
+            <div className="notifications-dropdown">
+              <div className="notifications-header">
+                <h4>Notifications</h4>
+                {unreadCount > 0 && (
+                  <button className="btn-mark-read" onClick={markAllAsRead}>Mark all as read</button>
+                )}
+              </div>
+              <div className="notifications-list">
+                {notifications.length === 0 ? (
+                  <div className="notification-empty">You're all caught up!</div>
+                ) : (
+                  notifications.map(n => (
+                    <div 
+                      key={n.id} 
+                      className={`notification-item ${n.is_read ? '' : 'unread'}`}
+                      onClick={() => handleNotificationClick(n)}
+                    >
+                      {n.profiles?.avatar_url ? (
+                        <img src={n.profiles.avatar_url} alt="avatar" className="notification-avatar" />
+                      ) : (
+                        <div className="notification-avatar" style={{ background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' }}>
+                          {n.profiles?.name ? n.profiles.name.charAt(0).toUpperCase() : "U"}
+                        </div>
+                      )}
+                      <div className="notification-content">
+                        <div className="notification-text">
+                          <strong>{n.profiles?.name || 'Someone'}</strong>{' '}
+                          {n.type === 'follow' && 'started following you'}
+                          {n.type === 'like' && 'liked your post'}
+                          {n.type === 'comment' && 'commented on your post'}
+                          {n.type === 'message' && 'sent you a message'}
+                        </div>
+                        <div className="notification-time">
+                          {new Date(n.created_at).toLocaleDateString()} {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           <button onClick={handleLogout} className="btn-logout">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width: '14px', height: '14px'}}>
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -341,6 +638,39 @@ export default function Sidebar() {
             <span>Logout</span>
           </button>
         </div>
+
+        {/* Mobile Hamburger Button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? "✕" : "☰"}
+        </button>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="mobile-menu">
+            {navItems.map(({ to, label, icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`navbar-link${location.pathname === to ? " active" : ""}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {icon}
+                {label}
+              </Link>
+            ))}
+            <button onClick={handleLogout} className="btn-logout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width: '14px', height: '14px'}}>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
       </nav>
     </>
   );

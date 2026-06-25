@@ -238,15 +238,21 @@
 @media (max-width: 768px) {
     .landing-navbar {
         justify-content: center;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+    .hero {
+        padding: 140px 20px 40px;
     }
     .hero-logo-large {
         height: 60px;
     }
     .hero-title {
-        font-size: 2.8rem;
+        font-size: 2rem;
     }
     .hero-tagline {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     .hero-actions {
         flex-direction: column;
@@ -254,13 +260,18 @@
         align-items: center;
     }
     .hero-actions .btn {
-        width: fit-content;
+        width: 100%;
         max-width: none;
     }
     .features-grid {
         grid-template-columns: 1fr;
     }
+    .btn-nav-signin, .btn-nav-getstarted {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
 }
+
 
 
 

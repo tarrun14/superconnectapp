@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
@@ -24,6 +25,29 @@ const styles = `
   .page-inner {
     max-width: 1100px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    background: #0F0F1180;
+  }
+  
+  .page-inner::before, .page-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .page-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .page-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   .page-subtitle {
@@ -58,13 +82,16 @@ const styles = `
     gap: 24px;
   }
   
-  @media (max-width: 900px) {
+  @media (max-width: 1024px) {
     .projects-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
+    .page-root {
+      padding: 80px 16px 80px;
+    }
     .projects-grid {
       grid-template-columns: 1fr;
     }
@@ -185,6 +212,7 @@ export default function ProjectHub() {
   const [projects, setProjects] = useState([]);
   const [user, setUser] = useState(null); 
   const [loading, setLoading] = useState(true);
+  const [followStatus, setFollowStatus] = useState({}); // { [projectId]: boolean }
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -208,14 +236,11 @@ export default function ProjectHub() {
     }
   };
 
-  // ✅ SINGLE fetchProjects (removed duplicate)
+  // Fetch all projects and build follow status map per project ID
   const fetchProjects = async (currentUser) => {
     const { data: projectsData } = await supabase
       .from("projects")
-      .select(`
-        *,
-        profiles(name, avatar_url)
-      `)
+      .select(`*, profiles(name, avatar_url)`)
       .order("created_at", { ascending: false });
 
     const { data: follows } = await supabase
@@ -225,12 +250,14 @@ export default function ProjectHub() {
 
     const followedIds = follows?.map((f) => f.project_id) || [];
 
-    const merged = (projectsData || []).map((proj) => ({
-      ...proj,
-      isFollowing: followedIds.includes(proj.id),
-    }));
+    // Build a map of { projectId: bool } instead of embedding in each object
+    const statusMap = {};
+    (projectsData || []).forEach((proj) => {
+      statusMap[proj.id] = followedIds.includes(proj.id);
+    });
 
-    setProjects(merged);
+    setProjects(projectsData || []);
+    setFollowStatus(statusMap);
     setLoading(false);
   };
 
@@ -241,30 +268,40 @@ export default function ProjectHub() {
     const proj = projects.find((p) => p.id === projectId);
     if (!proj || proj.user_id === user.id) return;
 
-    if (proj.isFollowing) return;
+    const currently = followStatus[projectId] || false;
 
-    const { error } = await supabase.from("project_followers").insert([
-      {
-        user_id: user.id,
-        project_id: projectId,
-      },
-    ]);
+    // Optimistic update — flip the status for this project ID only
+    setFollowStatus((prev) => ({ ...prev, [projectId]: !currently }));
 
-    if (!error) {
-      fetchProjects(user);
+    let error;
+    if (currently) {
+      ({ error } = await supabase
+        .from("project_followers")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("project_id", projectId));
+    } else {
+      ({ error } = await supabase
+        .from("project_followers")
+        .insert([{ user_id: user.id, project_id: projectId }]));
+    }
+
+    if (error) {
+      // Revert on failure
+      setFollowStatus((prev) => ({ ...prev, [projectId]: currently }));
+      console.error(error);
     }
   };
 
   const handleProjectClick = (proj) => {
-    if (proj.isFollowing || proj.user_id === user?.id) {
-      navigate(`/project/${proj.id}`);
-    }
+    navigate(`/project/${proj.id}`);
   };
 
   return (
     <>
       <style>{styles}</style>
       <div className="page-root">
+        <BackgroundParticles variant="split" />
         <div className="page-inner">
           <div className="page-header">
             <h2>Project Hub</h2>
@@ -278,11 +315,10 @@ export default function ProjectHub() {
           ) : (
             <div className="projects-grid">
             {projects.map((proj) => {
-              const canEnter = proj.isFollowing || proj.user_id === user?.id;
               return (
               <div 
                 key={proj.id} 
-                className={`project-card ${canEnter ? "clickable" : ""}`}
+                className="project-card clickable"
                 onClick={() => handleProjectClick(proj)}
               >
                 {proj.image_url && (
@@ -313,10 +349,10 @@ export default function ProjectHub() {
 
                 {proj.user_id !== user?.id && (
                   <button
-                    className={`btn-follow ${proj.isFollowing ? "active" : ""}`}
+                    className={`btn-follow ${followStatus[proj.id] ? "active" : ""}`}
                     onClick={(e) => followProject(e, proj.id)}
                   >
-                    {proj.isFollowing ? "Following" : "Follow Project"}
+                    {followStatus[proj.id] ? "Following" : "Follow Project"}
                   </button>
                 )}
                 </div>

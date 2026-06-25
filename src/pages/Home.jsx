@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CreatePost from "../components/CreatePost";
 import Feed from "../components/Feed";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
@@ -29,6 +30,29 @@ const styles = `
     max-width: 860px;
     margin: 0 auto;
     padding: 40px 20px;
+    position: relative;
+    z-index: 1;
+    background: #0F0F1180;
+  }
+  
+  .home-inner::before, .home-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .home-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .home-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   .home-header {
@@ -126,6 +150,25 @@ const styles = `
   .filters-bar select:hover, .filters-bar select:focus {
     border-color: var(--accent);
   }
+
+  @media (max-width: 768px) {
+    .home-inner {
+      padding: 20px 12px;
+    }
+    .search-bar {
+      flex-direction: column;
+    }
+    .search-bar button {
+      width: 100%;
+    }
+    .filters-bar {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .filters-bar select {
+      width: 100%;
+    }
+  }
 `;
 
 const Home = () => {
@@ -150,6 +193,7 @@ const Home = () => {
     <>
       <style>{styles}</style>
       <div className="home-root">
+        <BackgroundParticles variant="split" />
         <div className="home-inner">
 
           {/* Header */}

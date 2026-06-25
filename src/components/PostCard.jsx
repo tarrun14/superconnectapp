@@ -79,6 +79,16 @@ export default function PostCard({ post, onDelete }) {
       if (!error) {
         setLiked(true);
         setLikeCount((prev) => prev + 1);
+        
+        if (user.id !== post.user_id) {
+          await supabase.from("notifications").insert({
+            user_id: post.user_id,
+            type: 'like',
+            from_user_id: user.id,
+            post_id: post.id,
+            message: 'liked your post'
+          });
+        }
       }
     }
   };
@@ -190,6 +200,16 @@ export default function PostCard({ post, onDelete }) {
     if (!error) {
       setComment("");
       fetchComments();
+      
+      if (user.id !== post.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: post.user_id,
+          type: 'comment',
+          from_user_id: user.id,
+          post_id: post.id,
+          message: 'commented on your post'
+        });
+      }
     }
   };
 

@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import Particles from "react-tsparticles";
-import { loadSlim } from "tsparticles-slim";
+import BackgroundParticles from "../components/BackgroundParticles";
 import './Login.css'
 
 const Register = () => {
@@ -13,10 +12,6 @@ const Register = () => {
   const [message, setMessage] = useState('')
 
   const navigate = useNavigate()
-
-  const particlesInit = useCallback(async engine => {
-    await loadSlim(engine);
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,40 +54,7 @@ const Register = () => {
 
   return (
     <div className="login-page" style={{ position: "relative", overflow: "hidden" }}>
-      <Particles
-          id="tsparticles-register"
-          init={particlesInit}
-          style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              zIndex: 0
-          }}
-          options={{
-              background: { color: { value: "transparent" } },
-              fpsLimit: 60,
-              interactivity: {
-                  events: {
-                      onClick: { enable: true, mode: "push" },
-                      onHover: { enable: true, mode: "repulse" },
-                      resize: true,
-                  },
-                  modes: { push: { quantity: 3 }, repulse: { distance: 100, duration: 0.4 } },
-              },
-              particles: {
-                  color: { value: "#ffffff" },
-                  links: { color: "#ffffff", distance: 150, enable: true, opacity: 0.3, width: 1 },
-                  move: { direction: "none", enable: true, outModes: { default: "bounce" }, random: true, speed: 1.5, straight: false },
-                  number: { density: { enable: true, area: 800 }, value: 120 },
-                  opacity: { value: 0.6 },
-                  shape: { type: "circle" },
-                  size: { value: { min: 2, max: 3 } },
-              },
-              detectRetina: true,
-          }}
-      />
+      <BackgroundParticles />
       <div className="login-card animate-slideUp" style={{ position: "relative", zIndex: 1 }}>
 
         <div className="login-header">

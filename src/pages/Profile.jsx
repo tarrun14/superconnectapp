@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
@@ -30,6 +31,29 @@ const styles = `
   .profile-inner {
     max-width: 760px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    background: #0F0F1180;
+  }
+  
+  .profile-inner::before, .profile-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .profile-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .profile-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   .profile-header {
@@ -320,6 +344,97 @@ const styles = `
     align-items: center;
     gap: 8px;
   }
+
+  /* ── Skill Tags ── */
+  .skill-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .skill-tag {
+    background: rgba(124, 58, 237, 0.125);
+    border: 1px solid #7C3AED;
+    color: #A78BFA;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .skill-tag-remove {
+    background: transparent;
+    border: none;
+    color: #A78BFA;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+  .skill-tag-remove:hover { color: #EF4444; }
+  .skill-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .skill-input-row input {
+    flex: 1;
+  }
+  .btn-add-skill {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-add-skill:hover { background: var(--accent-hover); }
+  .skill-limit-text {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .profile-banner {
+      height: 80px;
+    }
+    .avatar-wrapper {
+      width: 60px;
+      height: 60px;
+      margin-top: -30px;
+      margin-left: 16px;
+      border-width: 2px;
+    }
+    .profile-avatar {
+      font-size: 24px;
+    }
+    .profile-header {
+      margin-bottom: 32px;
+    }
+    .profile-header h2 {
+      font-size: 24px;
+    }
+    .profile-stats {
+      gap: 12px !important;
+    }
+    .profile-stats span {
+      font-size: 14px !important;
+    }
+    .profile-stats span:first-child {
+      font-size: 16px !important;
+    }
+    .create-section {
+      padding: 16px;
+    }
+  }
 `;
 
 export default function Profile() {
@@ -329,6 +444,8 @@ export default function Profile() {
   const [editName, setEditName] = useState("");
   const [editAge, setEditAge] = useState("");
   const [editOccupation, setEditOccupation] = useState("");
+  const [editSkills, setEditSkills] = useState([]);
+  const [skillInput, setSkillInput] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -372,6 +489,7 @@ export default function Profile() {
           setEditName(profile.name || "");
           setEditAge(profile.age || "");
           setEditOccupation(profile.occupation || "");
+          setEditSkills(profile.skills || []);
         }
         
         await fetchProjects(user.id);
@@ -440,14 +558,15 @@ export default function Profile() {
         name: editName,
         age: editAge ? parseInt(editAge) : null,
         occupation: editOccupation,
-        avatar_url: avatarUrl
+        avatar_url: avatarUrl,
+        skills: editSkills
       })
       .eq("id", user.id);
 
     if (error) {
       alert("Error saving profile: " + error.message);
     } else {
-      setProfileData({ ...profileData, name: editName, age: editAge, occupation: editOccupation, avatar_url: avatarUrl });
+      setProfileData({ ...profileData, name: editName, age: editAge, occupation: editOccupation, avatar_url: avatarUrl, skills: editSkills });
       setIsEditingProfile(false);
       setAvatarFile(null);
       setAvatarPreview(null);
@@ -587,6 +706,7 @@ export default function Profile() {
 
   if (loading) return (
     <div className="profile-root">
+      <BackgroundParticles variant="split" />
       <div className="profile-inner">
         <SkeletonLoader type="page" />
       </div>
@@ -597,6 +717,7 @@ export default function Profile() {
     <>
       <style>{styles}</style>
       <div className="profile-root">
+        <BackgroundParticles variant="split" />
         <div className="profile-inner">
           <div className="profile-header">
             <h2>My Profile</h2>
@@ -647,8 +768,48 @@ export default function Profile() {
                    </label>
                    <input className="form-field" placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ marginBottom: '8px' }} />
                    <input className="form-field" type="number" placeholder="Age" value={editAge} onChange={(e) => setEditAge(e.target.value)} style={{ marginBottom: '8px' }} />
-                   <input className="form-field" placeholder="Occupation" value={editOccupation} onChange={(e) => setEditOccupation(e.target.value)} style={{ marginBottom: '12px' }} />
-                   
+                   <input className="form-field" placeholder="Occupation" value={editOccupation} onChange={(e) => setEditOccupation(e.target.value)} style={{ marginBottom: '8px' }} />
+                    
+                    {/* Skill Tags Editor */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <div className="skill-tags-container">
+                        {editSkills.map((skill, i) => (
+                          <span key={i} className="skill-tag">
+                            {skill}
+                            <button className="skill-tag-remove" onClick={() => setEditSkills(prev => prev.filter((_, idx) => idx !== i))}>×</button>
+                          </span>
+                        ))}
+                      </div>
+                      {editSkills.length < 10 && (
+                        <div className="skill-input-row">
+                          <input
+                            className="form-field"
+                            placeholder="Add a skill (e.g. React, Python)"
+                            value={skillInput}
+                            onChange={(e) => setSkillInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const trimmed = skillInput.trim();
+                                if (trimmed && !editSkills.includes(trimmed)) {
+                                  setEditSkills(prev => [...prev, trimmed]);
+                                  setSkillInput('');
+                                }
+                              }
+                            }}
+                          />
+                          <button className="btn-add-skill" onClick={() => {
+                            const trimmed = skillInput.trim();
+                            if (trimmed && !editSkills.includes(trimmed)) {
+                              setEditSkills(prev => [...prev, trimmed]);
+                              setSkillInput('');
+                            }
+                          }}>Add</button>
+                        </div>
+                      )}
+                      <p className="skill-limit-text">{editSkills.length}/10 skills</p>
+                    </div>
+                    
                    <div style={{ display: 'flex', gap: '8px' }}>
                      <button className="btn-create" onClick={handleSaveProfile} disabled={savingProfile}>
                        {savingProfile ? "Saving..." : "Save"}
@@ -664,7 +825,16 @@ export default function Profile() {
                    <p className="profile-email">{profileData?.email}</p>
                    {profileData?.occupation && <p className="profile-meta">💼 {profileData.occupation}</p>}
                    {profileData?.age && <p className="profile-meta">🎂 {profileData.age} years old</p>}
-                   
+                    
+                    {/* Skill Tags Display */}
+                    {profileData?.skills?.length > 0 && (
+                      <div className="skill-tags-container">
+                        {profileData.skills.map((skill, i) => (
+                          <span key={i} className="skill-tag">{skill}</span>
+                        ))}
+                      </div>
+                    )}
+                    
                    <div className="profile-stats" style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{followersCount}</span>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
+import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
@@ -24,6 +25,29 @@ const styles = `
   .page-inner {
     max-width: 900px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    background: #0F0F1180;
+  }
+  
+  .page-inner::before, .page-inner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .page-inner::before {
+    left: 0;
+    background: linear-gradient(to right, #0F0F11, transparent);
+  }
+  
+  .page-inner::after {
+    right: 0;
+    background: linear-gradient(to left, #0F0F11, transparent);
   }
 
   .page-subtitle {
@@ -111,6 +135,15 @@ const styles = `
     color: var(--ink-muted);
     font-size: 0.9rem;
     font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .page-root {
+      padding: 80px 16px 80px;
+    }
+    .grid-container {
+      grid-template-columns: 1fr;
+    }
   }
 `;
 
@@ -244,6 +277,7 @@ export default function Following() {
     <>
       <style>{styles}</style>
       <div className="page-root">
+        <BackgroundParticles variant="split" />
         <div className="page-inner">
           <div className="page-header" style={{ flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
             <h2>Following</h2>
