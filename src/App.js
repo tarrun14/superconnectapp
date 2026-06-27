@@ -14,12 +14,13 @@ import Followers from "./pages/Followers";
 import UserProfile from "./pages/UserProfile";
 import ProjectPage from "./pages/ProjectPage";
 import ProjectHub from "./pages/ProjectHub";
+import ResetPassword from "./pages/ResetPassword";
 
 // Components
 import Sidebar from "./components/Sidebar";
 
 // Pages where navbar should NOT appear
-const NO_NAVBAR_ROUTES = ["/", "/login", "/register"];
+const NO_NAVBAR_ROUTES = ["/", "/login", "/register", "/reset-password"];
 
 function Layout() {
   const location = useLocation();
@@ -60,6 +61,7 @@ function Layout() {
           <Route path="/user/:id" element={<UserProfile />} />
           <Route path="/project/:id" element={<ProjectPage />} />
           <Route path="/project-hub" element={<ProjectHub />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
         </Routes>
       </main>
