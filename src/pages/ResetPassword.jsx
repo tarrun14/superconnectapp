@@ -13,17 +13,42 @@ const ResetPassword = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Supabase fires PASSWORD_RECOVERY event when user lands via the reset link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+    const hash = window.location.hash
+    // Extract everything after access_token= (including access_token itself)
+    const tokenStartIndex = hash.indexOf('access_token=')
+    
+    if (tokenStartIndex !== -1) {
+      const tokenStr = hash.substring(tokenStartIndex)
+      const params = new URLSearchParams(tokenStr)
+      const access_token = params.get('access_token')
+      const refresh_token = params.get('refresh_token')
+      const type = params.get('type')
+
+      if (access_token && refresh_token && type === 'recovery') {
+        supabase.auth.setSession({
+          access_token,
+          refresh_token
+        }).then(({ data, error }) => {
+          if (error) {
+            setMessageType('error')
+            setMessage('Invalid or expired reset link. Please request a new one.')
+          }
+          setSessionReady(true)
+        })
+        return
+      }
+    }
+
+    // Fallback if no token in URL
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSessionReady(true)
+      } else {
+        setMessageType('error')
+        setMessage('Invalid or expired reset link. Please request a new one.')
         setSessionReady(true)
       }
     })
-    // Also check for an existing session (in case page was refreshed)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true)
-    })
-    return () => subscription.unsubscribe()
   }, [])
 
   const handleReset = async (e) => {
@@ -156,6 +181,13 @@ const ResetPassword = () => {
 
         {!sessionReady ? (
           <p className="rp-waiting">⏳ Verifying reset link… please wait.</p>
+        ) : messageType === 'error' && message === 'Invalid or expired reset link. Please request a new one.' ? (
+          <div style={{ textAlign: 'center' }}>
+            <div className={`rp-msg ${messageType}`}>{message}</div>
+            <button className="rp-btn" onClick={() => navigate('/login')} style={{ marginTop: '20px' }}>
+              Back to Login
+            </button>
+          </div>
         ) : (
           <form onSubmit={handleReset}>
             <label className="rp-label">New Password</label>
@@ -182,7 +214,7 @@ const ResetPassword = () => {
           </form>
         )}
 
-        {message && (
+        {message && message !== 'Invalid or expired reset link. Please request a new one.' && (
           <div className={`rp-msg ${messageType}`}>{message}</div>
         )}
       </div>
