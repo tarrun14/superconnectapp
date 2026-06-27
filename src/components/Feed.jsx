@@ -82,7 +82,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         if (category && category !== "All") posts = posts.filter(p => p.category === category);
         if (topic && topic !== "All") posts = posts.filter(p => p.topic === topic);
 
-        // fetch projects by followed users
+        // fetch projects by followed users (source 2)
         let projQuery = supabase
           .from("projects")
           .select(`*, profiles(name, avatar_url)`)
@@ -94,10 +94,42 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         }
 
         const { data: projData } = await projQuery;
-        const projects = (projData || []).map(pr => ({ ...pr, type: 'project' }));
+        const followedUserProjects = (projData || []).map(pr => ({ ...pr, type: 'project' }));
 
-        // combine and sort
-        let combined = [...posts, ...projects].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        // fetch directly followed projects from project_followers (source 3)
+        let directFollowedProjects = [];
+        if (currentUser) {
+          const { data: pfData } = await supabase
+            .from("project_followers")
+            .select("project_id")
+            .eq("user_id", currentUser.id);
+          const directProjIds = pfData?.map(p => p.project_id) || [];
+
+          if (directProjIds.length > 0) {
+            let directProjQuery = supabase
+              .from("projects")
+              .select(`*, profiles(name, avatar_url)`)
+              .in("id", directProjIds)
+              .order("created_at", { ascending: false });
+
+            if (search && search.trim() !== "") {
+              directProjQuery = directProjQuery.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+            }
+
+            const { data: directData } = await directProjQuery;
+            directFollowedProjects = (directData || []).map(pr => ({ ...pr, type: 'project' }));
+          }
+        }
+
+        // merge all projects, deduplicate by id
+        const allProjectsMap = new Map();
+        [...followedUserProjects, ...directFollowedProjects].forEach(pr => {
+          if (!allProjectsMap.has(pr.id)) allProjectsMap.set(pr.id, pr);
+        });
+        const mergedProjects = Array.from(allProjectsMap.values());
+
+        // combine posts + merged projects, sort by created_at
+        let combined = [...posts, ...mergedProjects].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         if (sort === "top" || sort === "most_replies") {
           const [{ data: likesData }, { data: commentsData }] = await Promise.all([
