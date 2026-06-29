@@ -6,19 +6,19 @@ import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
+    --bg-app: #0F0F11;
+    --bg-card: #1A1A1F;
     --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
+    --text-primary: #F4F4F5;
+    --text-secondary: #A1A1AA;
     --accent: #7C3AED;
   }
 
   .page-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
   }
 
@@ -51,7 +51,7 @@ const styles = `
   }
 
   .page-subtitle {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 15px;
     margin-top: 4px;
   }
@@ -71,7 +71,7 @@ const styles = `
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   .page-header .dot {
@@ -95,8 +95,8 @@ const styles = `
   }
 
   .card-new {
-    background: #1A1A1F;
-    border: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px;
     display: flex;
@@ -132,7 +132,7 @@ const styles = `
   }
 
   .empty-msg {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 0.9rem;
     font-style: italic;
   }
@@ -310,7 +310,7 @@ export default function Following() {
                     </div>
                   )}
                   <div style={{ fontWeight: '600', fontSize: '1.1rem' }}>{f.profiles?.name || "User"}</div>
-                  <div style={{ color: 'var(--ink-muted)', fontSize: '13px', marginTop: '4px' }}>{f.profiles?.occupation || "Member"}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>{f.profiles?.occupation || "Member"}</div>
                   <button className="unfollow-btn" onClick={(e) => unfollowUser(e, f.following_id)}>
                     Unfollow
                   </button>
@@ -345,7 +345,7 @@ export default function Following() {
                     </div>
                   )}
                   <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{p.project?.title || "Project"}</div>
-                  <div style={{ color: 'var(--ink-muted)', fontSize: '13px', marginTop: '4px' }}>by {p.creator?.name || "User"}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>by {p.creator?.name || "User"}</div>
                   <button className="unfollow-btn" onClick={(e) => unfollowProject(e, p.project_id)}>
                     Unfollow Project
                   </button>

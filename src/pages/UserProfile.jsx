@@ -7,11 +7,11 @@ import FollowModals from "../components/FollowModals";
 
 const styles = `
   :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
+    --bg-app: #0F0F11;
+    --bg-card: #1A1A1F;
     --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
+    --text-primary: #F4F4F5;
+    --text-secondary: #A1A1AA;
     --accent: #7C3AED;
     --accent-hover: #6D28D9;
     --shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -23,9 +23,9 @@ const styles = `
 
   .profile-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
   }
 
@@ -49,7 +49,7 @@ const styles = `
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   .btn-follow-user {
@@ -90,7 +90,7 @@ const styles = `
   }
 
   .project-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 24px;
@@ -130,7 +130,7 @@ const styles = `
     margin-bottom: 48px;
   }
   .profile-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -178,12 +178,12 @@ const styles = `
     font-family: 'Inter', sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--text-primary);
     margin-bottom: 2px;
   }
   .profile-meta {
     font-size: 0.95rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -657,7 +657,7 @@ export default function UserProfile() {
             <p className="section-label">Projects ({projects.length})</p>
             <div className="projects-list">
               {projects.length === 0 ? (
-                <p style={{ color: "var(--ink-muted)" }}>No projects yet.</p>
+                <p style={{ color: "var(--text-secondary)" }}>No projects yet.</p>
               ) : (
                 projects.map((proj) => (
                   <div
@@ -675,7 +675,7 @@ export default function UserProfile() {
                     </div>
                     <h4 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{proj.title}</h4>
                     {proj.description && (
-                      <p style={{ fontSize: "0.95rem", color: "var(--ink-muted)", lineHeight: 1.5 }}>
+                      <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                         {proj.description}
                       </p>
                     )}

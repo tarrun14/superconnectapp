@@ -12,8 +12,8 @@
 ========================= */
 body {
   font-family: 'Inter', sans-serif;
-  background: #0F0F11;
-  color: #F4F4F5;
+  background: var(--bg-app);
+  color: var(--text-primary);
 }
 
 /* =========================
@@ -29,17 +29,17 @@ body {
 ========================= */
 .navbar {
   height: 60px;
-  background: #111114;
+  background: var(--bg-navbar);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 25px;
   box-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
-  border-bottom: 1px solid #2A2A2F;
+  border-bottom: 1px solid var(--border);
 }
 
 .navbar h2 {
-  color: #7C3AED;
+  color: var(--accent);
 }
 
 /* =========================
@@ -47,14 +47,14 @@ body {
 ========================= */
 .footer {
   height: 60px;
-  background: #111114;
+  background: var(--bg-navbar);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: #A1A1AA;
+  color: var(--text-secondary);
   box-shadow: 0 -1px 12px rgba(0, 0, 0, 0.3);
-  border-top: 1px solid #2A2A2F;
+  border-top: 1px solid var(--border);
 }
 
 /* =========================
@@ -71,12 +71,12 @@ body {
 }
 
 .btn-primary {
-  background: #7C3AED;
+  background: var(--accent);
   color: white;
 }
 
 .btn-primary:hover {
-  background: #6D28D9;
+  background: var(--accent-hover);
   transform: translateY(-1px);
 }
 
@@ -106,16 +106,16 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0F0F11;
+  background: var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2A2A2F;
+  background: var(--border);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7C3AED;
+  background: var(--accent);
 }
 
 /* =========================

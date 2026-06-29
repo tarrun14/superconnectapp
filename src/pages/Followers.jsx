@@ -5,20 +5,12 @@ import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
-  :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-  }
 
   .page-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
   }
 
@@ -27,7 +19,7 @@ const styles = `
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    background: #0F0F1180;
+    background: transparent;
   }
   
   .page-inner::before, .page-inner::after {
@@ -42,16 +34,16 @@ const styles = `
   
   .page-inner::before {
     left: 0;
-    background: linear-gradient(to right, #0F0F11, transparent);
+    background: linear-gradient(to right, var(--bg-app), transparent);
   }
   
   .page-inner::after {
     right: 0;
-    background: linear-gradient(to left, #0F0F11, transparent);
+    background: linear-gradient(to left, var(--bg-app), transparent);
   }
 
   .page-subtitle {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 15px;
     margin-top: 4px;
   }
@@ -71,7 +63,7 @@ const styles = `
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   .page-header .dot {
@@ -81,7 +73,7 @@ const styles = `
   .section-label {
     font-size: 16px;
     font-weight: bold;
-    color: white;
+    color: var(--text-primary);
     text-transform: uppercase;
     margin: 32px 0 16px;
     border-left: 3px solid var(--accent);
@@ -95,8 +87,8 @@ const styles = `
   }
 
   .card-new {
-    background: #1A1A1F;
-    border: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px;
     display: flex;
@@ -132,7 +124,7 @@ const styles = `
   }
 
   .empty-msg {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 0.9rem;
     font-style: italic;
   }
@@ -251,7 +243,7 @@ export default function Followers() {
                     </div>
                   )}
                   <div style={{ fontWeight: '600', fontSize: '1.1rem' }}>{f.profiles?.name || "User"}</div>
-                  <div style={{ color: 'var(--ink-muted)', fontSize: '13px', marginTop: '4px' }}>{f.profiles?.occupation || "Member"}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>{f.profiles?.occupation || "Member"}</div>
                   {!myFollowing.includes(f.follower_id) && (
                     <button className="follow-back-btn" onClick={(e) => followBack(e, f.follower_id)}>
                       Follow Back

@@ -307,7 +307,7 @@ export default function PostCard({ post, onDelete }) {
                   {c.profiles?.avatar_url ? (
                     <img src={c.profiles.avatar_url} alt="avatar" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--border)', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
                       {c.profiles?.name ? c.profiles.name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}

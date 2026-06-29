@@ -54,20 +54,13 @@ async function decryptMessage(ciphertext, ivString, keyMaterial) {
 }
 
 const styles = `
-  :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-  }
+
 
   .messages-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
     display: flex;
     justify-content: center;
@@ -77,7 +70,7 @@ const styles = `
     width: 100%;
     max-width: 1200px;
     display: flex;
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
     height: 75vh;
@@ -87,26 +80,7 @@ const styles = `
     z-index: 1;
   }
   
-  /* Applying gradient overlay inside the wrapper for visual separation */
-  .messages-inner::before, .messages-inner::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 80px;
-    pointer-events: none;
-    z-index: 10; /* high z-index inside messages to show over the content if needed, but not block clicks */
-  }
-  
-  .messages-inner::before {
-    left: 0;
-    background: linear-gradient(to right, #0F0F11, transparent);
-  }
-  
-  .messages-inner::after {
-    right: 0;
-    background: linear-gradient(to left, #0F0F11, transparent);
-  }
+
 
   /* ── Sidebar (Chats list) ── */
   .chat-sidebar {
@@ -114,7 +88,7 @@ const styles = `
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    background: var(--surface);
+    background: var(--bg-card);
   }
 
   .sidebar-header {
@@ -136,7 +110,7 @@ const styles = `
   .chat-user-item {
     padding: 16px 24px;
     cursor: pointer;
-    border-bottom: 1px solid #2A2A2F;
+    border-bottom: 1px solid var(--border);
     transition: background 200ms ease;
     display: flex;
     align-items: center;
@@ -153,13 +127,13 @@ const styles = `
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--bg);
+    background: var(--bg-app);
   }
 
   .chat-header {
     padding: 20px 24px;
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: var(--bg-card);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -173,7 +147,7 @@ const styles = `
   .chat-header .lock-badge {
     margin-left: auto;
     font-size: 0.75rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -217,36 +191,36 @@ const styles = `
   }
 
   .message-wrapper.received .message-bubble {
-    background: #2A2A2F;
-    color: var(--ink);
+    background: var(--border);
+    color: var(--text-primary);
     border-bottom-left-radius: 4px;
   }
 
   .message-timestamp {
     font-size: 10px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-top: 4px;
   }
 
   /* ── Input Area ── */
   .input-area {
     padding: 16px 24px;
-    background: var(--surface);
-    border-top: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
     display: flex;
     gap: 12px;
   }
 
   .chat-input {
     flex: 1;
-    background: var(--bg);
+    background: var(--bg-app);
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 10px 16px;
     font-family: inherit;
     font-size: 0.95rem;
     outline: none;
-    color: var(--ink);
+    color: var(--text-primary);
     transition: border-color 200ms ease;
   }
 
@@ -255,7 +229,7 @@ const styles = `
   }
   
   .chat-input::placeholder {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
 
   .btn-send {
@@ -279,7 +253,7 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-style: italic;
   }
 
@@ -302,7 +276,7 @@ const styles = `
       right: 0;
       bottom: 0;
       z-index: 10;
-      background: var(--bg);
+      background: var(--bg-app);
     }
     .chat-sidebar.hidden-mobile {
       display: none;
@@ -315,7 +289,7 @@ const styles = `
       align-items: center;
       background: transparent;
       border: none;
-      color: var(--ink);
+      color: var(--text-primary);
       font-size: 1.2rem;
       cursor: pointer;
       margin-right: 8px;
@@ -489,7 +463,7 @@ export default function Messages() {
             
             <div className="chat-list">
               {chatUsers.length === 0 ? (
-                <div style={{ padding: "20px", color: "var(--ink-muted)", fontStyle: "italic" }}>No chats yet</div>
+                <div style={{ padding: "20px", color: "var(--text-secondary)", fontStyle: "italic" }}>No chats yet</div>
               ) : (
                 chatUsers.map((u) => (
                   <div

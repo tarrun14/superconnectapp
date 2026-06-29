@@ -1,17 +1,17 @@
 .post-card {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--bg-card);
+  color: var(--text-primary);
   padding: 24px;
   border-radius: 12px;
   margin-bottom: 20px;
   box-shadow: none;
-  border: 1px solid #2A2A2F;
+  border: 1px solid var(--border);
   transition: all 0.2s ease;
 }
 
 .post-card:hover {
   transform: translateY(-2px);
-  border-color: #7C3AED;
+  border-color: var(--accent);
   box-shadow: 0 8px 24px rgba(124,58,237,0.1);
 }
 
@@ -29,7 +29,7 @@
 }
 
 .avatar {
-  background: #0F0F11;
+  background: var(--bg-app);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -44,15 +44,15 @@
   font-weight: 600;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
-  color: #F4F4F5;
+  color: var(--text-primary);
 }
 
 /* FOLLOW BUTTON */
 .follow-btn {
   background: transparent;
-  border: 1.5px solid #7C3AED;
+  border: 1.5px solid var(--accent);
   padding: 6px 14px;
-  color: #7C3AED;
+  color: var(--accent);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -62,7 +62,7 @@
 }
 
 .follow-btn:hover {
-  background: #7C3AED;
+  background: var(--accent);
   color: #fff;
 }
 
@@ -71,7 +71,7 @@
   margin-top: 16px;
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #A1A1AA;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
@@ -89,7 +89,7 @@
   font-size: 0.75rem;
   border-radius: 20px;
   border: none;
-  color: #A855F7;
+  color: var(--accent-light);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -119,11 +119,11 @@
 }
 
 .like-btn {
-  background: #0F0F11;
+  background: var(--bg-app);
   border: 1px solid var(--border);
   padding: 8px 16px;
   border-radius: 20px;
-  color: var(--ink);
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -135,15 +135,15 @@
 }
 
 .like-btn:hover {
-  border-color: #7C3AED;
-  color: #A855F7;
+  border-color: var(--accent);
+  color: var(--accent-light);
   background: rgba(124,58,237,0.08);
 }
 
 /* COMMENTS */
 .view-comments-btn {
   font-size: 13px;
-  color: #A1A1AA;
+  color: var(--text-secondary);
   margin-top: 16px;
   cursor: pointer;
   display: flex;
@@ -160,13 +160,13 @@
 }
 
 .view-comments-btn:hover {
-  color: #7C3AED;
+  color: var(--accent);
 }
 
 .comments-container {
   max-height: 140px;
   overflow-y: auto;
-  background: #0F0F11;
+  background: var(--bg-app);
   padding: 12px 16px;
   border-radius: 8px;
   margin-top: 12px;
@@ -178,7 +178,7 @@
   border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
   line-height: 1.4;
-  color: #A1A1AA;
+  color: var(--text-secondary);
 }
 
 .comment-item:last-child {
@@ -187,7 +187,7 @@
 
 .comment-item span.comment-user {
   font-weight: 600;
-  color: #A855F7;
+  color: var(--accent-light);
   margin-right: 4px;
 }
 
@@ -197,7 +197,7 @@
 }
 
 .comments-container::-webkit-scrollbar-thumb {
-  background: #2A2A2F;
+  background: var(--border);
   border-radius: 10px;
 }
 
@@ -213,22 +213,22 @@
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #0F0F11;
+  background: var(--bg-input);
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
-  color: #F4F4F5;
+  color: var(--text-primary);
   transition: border-color 0.2s ease;
   outline: none;
 }
 
 .comment-box input:focus {
-  border-color: #7C3AED;
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
 
 .comment-box button {
   padding: 0 16px;
-  background: #7C3AED;
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   color: white;
@@ -239,12 +239,12 @@
 }
 
 .comment-box button:hover {
-  background: #6D28D9;
+  background: var(--accent-hover);
 }
 
 .delete-btn {
   background: transparent;
-  color: #A1A1AA;
+  color: var(--text-secondary);
   border: none;
   padding: 6px 12px;
   border-radius: 6px;

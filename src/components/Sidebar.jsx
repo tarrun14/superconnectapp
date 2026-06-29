@@ -3,19 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const styles = `
-  :root {
-    --nav-height: 64px;
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-    --accent-hover: #6D28D9;
-    --accent-light: #A855F7;
-    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   /* ── Navbar ── */
   .navbar {
     position: fixed;
@@ -23,7 +10,7 @@ const styles = `
     left: 0;
     right: 0;
     height: var(--nav-height);
-    background: #111114;
+    background: var(--bg-navbar);
     backdrop-filter: blur(18px) saturate(1.6);
     -webkit-backdrop-filter: blur(18px) saturate(1.6);
     display: flex;
@@ -31,7 +18,7 @@ const styles = `
     padding: 0 32px;
     font-family: 'Inter', sans-serif;
     z-index: 1000;
-    border-bottom: 1px solid #2A2A2F;
+    border-bottom: 1px solid var(--border);
     box-shadow: 0 1px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3);
     box-sizing: border-box;
   }
@@ -57,7 +44,7 @@ const styles = `
     font-family: 'Inter', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
     line-height: 1;
     text-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
@@ -80,7 +67,7 @@ const styles = `
     padding: 8px 16px;
     border-radius: 8px;
     text-decoration: none;
-    color: #A1A1AA;
+    color: var(--text-secondary);
     font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.01em;
@@ -90,7 +77,7 @@ const styles = `
   }
 
   .navbar-link:hover {
-    color: #F4F4F5;
+    color: var(--text-primary);
     background: rgba(124, 58, 237, 0.08);
     transform: translateY(-1px);
   }
@@ -107,7 +94,7 @@ const styles = `
   }
 
   .navbar-link.active {
-    color: #fff;
+    color: white;
     background: #7C3AED;
     border-radius: 20px;
   }
@@ -157,8 +144,8 @@ const styles = `
     align-items: center;
     gap: 6px;
     background: transparent;
-    border: 1px solid #2A2A2F;
-    color: #A1A1AA;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     padding: 6px 14px;
     border-radius: 6px;
     font-family: 'Inter', sans-serif;
@@ -178,7 +165,7 @@ const styles = `
     position: relative;
     background: transparent;
     border: none;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -190,7 +177,7 @@ const styles = `
   }
   .bell-btn:hover {
     background: rgba(124, 58, 237, 0.1);
-    color: var(--ink);
+    color: var(--text-primary);
   }
   .bell-badge {
     position: absolute;
@@ -214,7 +201,7 @@ const styles = `
     right: 0;
     width: 320px;
     max-height: 400px;
-    background: #111114;
+    background: var(--bg-navbar);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 10px 24px rgba(0,0,0,0.5);
@@ -235,7 +222,7 @@ const styles = `
   .notifications-header h4 {
     margin: 0;
     font-size: 14px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 600;
   }
   
@@ -248,6 +235,25 @@ const styles = `
     font-weight: 500;
   }
   .btn-mark-read:hover { text-decoration: underline; }
+
+  .theme-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .theme-toggle-btn:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
 
   .notifications-list {
     overflow-y: auto;
@@ -287,20 +293,20 @@ const styles = `
   .notification-text {
     font-size: 13px;
     line-height: 1.4;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   .notification-text strong {
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 600;
   }
   .notification-time {
     font-size: 11px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   .notification-empty {
     padding: 24px;
     text-align: center;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 13px;
   }
 
@@ -333,7 +339,7 @@ const styles = `
       justify-content: center;
       background: transparent;
       border: none;
-      color: var(--ink);
+      color: var(--text-primary);
       font-size: 1.5rem;
       cursor: pointer;
       padding: 8px;
@@ -346,7 +352,7 @@ const styles = `
       top: var(--nav-height);
       left: 0;
       right: 0;
-      background: #111114;
+      background: var(--bg-navbar);
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -435,6 +441,24 @@ export default function Sidebar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.classList.contains("light-mode") || localStorage.getItem("theme") === "light"
+  );
+
+  const toggleTheme = () => {
+    setIsLightMode(prev => {
+      const newTheme = !prev;
+      if (newTheme) {
+        document.documentElement.classList.add("light-mode");
+        localStorage.setItem("theme", "light");
+      } else {
+        document.documentElement.classList.remove("light-mode");
+        localStorage.setItem("theme", "dark");
+      }
+      return newTheme;
+    });
+  };
 
   useEffect(() => {
     const ensureProfileExists = async () => {
@@ -572,6 +596,27 @@ export default function Sidebar() {
         {/* Right: Notifications & Logout (Desktop) */}
         <div className="navbar-right" style={{ position: 'relative' }}>
           
+          {/* Theme Toggle */}
+          <button className="theme-toggle-btn" onClick={toggleTheme} title="Toggle Theme">
+            {isLightMode ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '20px', height: '20px'}}>
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '20px', height: '20px'}}>
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            )}
+          </button>
+
           {/* Bell Icon */}
           <button className="bell-btn" onClick={() => {
             setShowDropdown(!showDropdown);

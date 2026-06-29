@@ -77,10 +77,10 @@ export default function ProjectFeedCard({ project }) {
               <span className="username" style={{ color: 'white', fontWeight: 'bold', fontSize: '15px' }}>{creatorName}</span>
               <span style={{ background: 'rgba(124, 58, 237, 0.15)', color: '#A855F7', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}>PROJECT</span>
             </div>
-            <span style={{ color: 'var(--ink-muted)', fontSize: '13px' }}>created a project</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>created a project</span>
           </div>
         </div>
-        <div style={{ color: 'var(--ink-muted)', fontSize: '12px' }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
           {timeStr}
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ProjectFeedCard({ project }) {
       {/* PROJECT INFO */}
       <div style={{ marginTop: project.image_url ? '0' : '16px', marginBottom: '20px' }}>
         <h3 style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>{project.title}</h3>
-        <p style={{ color: 'var(--ink-muted)', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {project.description}
         </p>
         <div>

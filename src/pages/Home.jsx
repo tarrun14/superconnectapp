@@ -6,22 +6,12 @@ import Feed from "../components/Feed";
 import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
-  :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --nav-height: 64px;
-  }
 
   .home-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding-top: var(--nav-height);
   }
 
@@ -47,8 +37,8 @@ const styles = `
     max-height: calc(100vh - 80px);
     overflow-y: auto;
     scrollbar-width: none;
-    background: #1A1A1F;
-    border-right: 1px solid #2A2A2F;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
     padding: 28px 28px 80px 28px;
   }
   .left-sidebar::-webkit-scrollbar {
@@ -89,12 +79,12 @@ const styles = `
   .ls-name {
     font-weight: bold;
     font-size: 16px;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 4px;
   }
   .ls-email {
     font-size: 13px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-bottom: 16px;
   }
   .ls-stats {
@@ -110,11 +100,11 @@ const styles = `
   .ls-stat-num {
     font-size: 14px;
     font-weight: bold;
-    color: white;
+    color: var(--text-primary);
   }
   .ls-stat-label {
     font-size: 11px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   .ls-skills {
     display: flex;
@@ -139,7 +129,7 @@ const styles = `
   .ls-heading {
     font-size: 14px;
     font-weight: bold;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 16px;
     border-left: 3px solid var(--accent);
     padding-left: 8px;
@@ -155,7 +145,7 @@ const styles = `
     transition: var(--transition);
   }
   .rs-project:hover {
-    background: #2A2A2F;
+    background: var(--border);
   }
   .ls-project {
     display: flex;
@@ -165,12 +155,12 @@ const styles = `
     padding: 8px;
     border-radius: 8px;
     text-decoration: none;
-    color: var(--ink);
+    color: var(--text-primary);
     transition: var(--transition);
   }
   .ls-project:hover {
     color: var(--accent);
-    background: #2A2A2F;
+    background: var(--border);
   }
   .ls-project img, .ls-project-placeholder {
     width: 32px;
@@ -204,7 +194,7 @@ const styles = `
     transition: var(--transition);
   }
   .rs-user:hover {
-    background: #2A2A2F;
+    background: var(--border);
   }
   .rs-user img, .rs-user-placeholder {
     width: 36px;
@@ -228,14 +218,14 @@ const styles = `
   .rs-user-name {
     font-size: 14px;
     font-weight: bold;
-    color: white;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .rs-user-occ {
     font-size: 12px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -288,8 +278,8 @@ const styles = `
     flex: 1;
     padding: 8px 12px;
     border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--ink);
+    background: var(--bg-card);
+    color: var(--text-primary);
     border-radius: 8px;
     outline: none;
     font-family: 'Inter', sans-serif;
@@ -297,7 +287,7 @@ const styles = `
   }
   
   .search-bar input::placeholder {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   
   .search-bar input:focus {
@@ -332,8 +322,8 @@ const styles = `
     border: 1px solid var(--border);
     border-radius: 8px;
     outline: none;
-    background: var(--surface);
-    color: var(--ink);
+    background: var(--bg-card);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
     cursor: pointer;
@@ -356,7 +346,7 @@ const styles = `
   .feed-tab {
     background: transparent;
     border: 1px solid var(--border);
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     padding: 8px 16px;
     border-radius: 99px;
     font-size: 13px;
@@ -366,7 +356,7 @@ const styles = `
   }
   .feed-tab:hover {
     border-color: var(--accent);
-    color: var(--ink);
+    color: var(--text-primary);
   }
   .feed-tab.active {
     background: var(--accent);
@@ -549,7 +539,7 @@ export default function Home() {
 
                 <div className="ls-heading">MY PROJECTS</div>
                 {myProjects.length === 0 ? (
-                  <div style={{fontSize:'12px', color:'var(--ink-muted)'}}>No projects yet</div>
+                  <div style={{fontSize:'12px', color:'var(--text-secondary)'}}>No projects yet</div>
                 ) : (
                   <>
                     {myProjects.slice(0, 3).map(p => (
@@ -576,7 +566,7 @@ export default function Home() {
 
                 <div className="ls-heading">SUGGESTED USERS</div>
                 {suggestedUsers.length === 0 ? (
-                  <div style={{fontSize:'12px', color:'var(--ink-muted)', marginBottom:'20px'}}>No suggestions right now</div>
+                  <div style={{fontSize:'12px', color:'var(--text-secondary)', marginBottom:'20px'}}>No suggestions right now</div>
                 ) : (
                   <>
                     {suggestedUsers.map(u => (
@@ -603,7 +593,7 @@ export default function Home() {
 
                 <div className="ls-heading" style={{marginTop:'24px'}}>TRENDING PROJECTS</div>
                 {trendingProjects.length === 0 ? (
-                  <div style={{fontSize:'12px', color:'var(--ink-muted)', marginBottom:'20px'}}>No trending projects</div>
+                  <div style={{fontSize:'12px', color:'var(--text-secondary)', marginBottom:'20px'}}>No trending projects</div>
                 ) : (
                   <>
                     {trendingProjects.map(p => (
@@ -633,7 +623,7 @@ export default function Home() {
                 </button>
               </>
             ) : (
-              <div style={{color:'var(--ink-muted)', fontSize:'13px'}}>Please log in to view your profile.</div>
+              <div style={{color:'var(--text-secondary)', fontSize:'13px'}}>Please log in to view your profile.</div>
             )}
           </div>
 

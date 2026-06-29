@@ -5,20 +5,12 @@ import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
-  :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-  }
 
   .page-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-input);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
   }
 
@@ -27,7 +19,7 @@ const styles = `
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    background: #0F0F1180;
+    background: transparent;
   }
   
   .page-inner::before, .page-inner::after {
@@ -42,16 +34,16 @@ const styles = `
   
   .page-inner::before {
     left: 0;
-    background: linear-gradient(to right, #0F0F11, transparent);
+    background: linear-gradient(to right, var(--bg-app), transparent);
   }
   
   .page-inner::after {
     right: 0;
-    background: linear-gradient(to left, #0F0F11, transparent);
+    background: linear-gradient(to left, var(--bg-app), transparent);
   }
 
   .page-subtitle {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 15px;
     margin-top: 4px;
   }
@@ -72,7 +64,7 @@ const styles = `
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   /* 🔥 3 Column Grid for Project Cards */
@@ -98,7 +90,7 @@ const styles = `
   }
 
   .project-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
     margin-bottom: 0; /* Removing bottom margin as grid handles gap */
@@ -122,7 +114,7 @@ const styles = `
     width: 100%;
     height: 200px;
     object-fit: cover;
-    background: var(--bg);
+    background: var(--bg-input);
   }
   
   .project-content {
@@ -149,7 +141,7 @@ const styles = `
   .project-title {
     font-size: 16px;
     font-weight: 700;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 8px;
     display: flex;
     align-items: center;
@@ -158,7 +150,7 @@ const styles = `
 
   .project-desc {
     font-size: 13px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-bottom: 16px;
     line-height: 1.5;
     flex: 1;
@@ -170,7 +162,7 @@ const styles = `
 
   .project-owner {
     font-size: 13px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-bottom: 16px;
     display: flex;
     align-items: center;
@@ -202,7 +194,7 @@ const styles = `
   }
 
   .empty-msg {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 0.9rem;
     font-style: italic;
   }
@@ -225,11 +217,11 @@ const styles = `
   .search-input {
     flex: 1;
     max-width: 400px;
-    background: #1A1A1F;
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 16px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     outline: none;
@@ -240,14 +232,14 @@ const styles = `
     box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
   }
   .search-input::placeholder {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   .status-dropdown {
-    background: #111114;
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 16px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
     outline: none;
@@ -296,7 +288,7 @@ const styles = `
     border-radius: 12px;
   }
   .empty-state-title {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 8px;
@@ -318,8 +310,8 @@ const styles = `
     padding: 24px;
   }
   .modal-card {
-    background: #1A1A1F;
-    border: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 32px;
     max-width: 500px;
@@ -329,22 +321,22 @@ const styles = `
     gap: 16px;
   }
   .modal-heading {
-    color: white;
+    color: var(--text-primary);
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 8px;
   }
   .modal-label {
     font-size: 14px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-bottom: 4px;
   }
   .modal-input {
-    background: var(--bg);
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 16px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     outline: none;
     width: 100%;
@@ -616,7 +608,7 @@ export default function ProjectHub() {
                 
                 <p className="project-desc">{proj.description}</p>
 
-                <div className="project-owner" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink-muted)', fontSize: '0.9rem', marginBottom: '16px' }} onClick={(e) => { e.stopPropagation(); navigate(`/user/${proj.user_id}`); }}>
+                <div className="project-owner" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }} onClick={(e) => { e.stopPropagation(); navigate(`/user/${proj.user_id}`); }}>
                   {proj.profiles?.avatar_url ? (
                     <img src={proj.profiles.avatar_url} alt="avatar" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
                   ) : (
@@ -687,7 +679,7 @@ export default function ProjectHub() {
               <input 
                 type="file" 
                 accept="image/*" 
-                style={{color: 'var(--ink)'}}
+                style={{color: 'var(--text-primary)'}}
                 onChange={e => setNewProject({...newProject, imageFile: e.target.files[0]})}
               />
             </div>

@@ -4,11 +4,11 @@
 
 :root {
   --nav-height: 80px;
-  --bg: #0F0F11;
-  --surface: #1A1A1F;
+  --bg-app: #0F0F11;
+  --bg-card: #1A1A1F;
   --border: #2A2A2F;
-  --ink: #F4F4F5;
-  --ink-muted: #A1A1AA;
+  --text-primary: #F4F4F5;
+  --text-secondary: #A1A1AA;
   --accent: #7C3AED;
   --accent-hover: #6D28D9;
   --shadow: 0 12px 40px rgba(0,0,0,0.3);
@@ -17,8 +17,8 @@
 
 .home {
     min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--bg-app);
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     position: relative;
     overflow-x: hidden;
@@ -89,7 +89,7 @@
     font-family: 'Inter', sans-serif;
     font-size: 3.5rem;
     font-weight: 700;
-    color: var(--ink);
+    color: var(--text-primary);
     letter-spacing: -0.03em;
     line-height: 1.1;
     margin-bottom: 24px;
@@ -105,7 +105,7 @@
 
 .hero-tagline {
     font-size: 1.25rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-weight: 400;
     line-height: 1.6;
     margin-bottom: 40px;
@@ -155,13 +155,13 @@
 
 .btn-secondary {
     background: transparent;
-    color: var(--ink);
+    color: var(--text-primary);
     border: 1.5px solid var(--border);
 }
 
 .btn-secondary:hover {
-    border-color: var(--ink-muted);
-    background: var(--surface);
+    border-color: var(--text-secondary);
+    background: var(--bg-card);
 }
 
 /* =============================================
@@ -181,7 +181,7 @@
 }
 
 .feature-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 40px 32px;
@@ -204,12 +204,12 @@
     font-family: 'Inter', sans-serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--text-primary);
     margin-bottom: 12px;
 }
 
 .feature-card p {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -330,7 +330,7 @@
 }
 
 .landing-footer p {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 0.9rem;
     margin: 0;
 }

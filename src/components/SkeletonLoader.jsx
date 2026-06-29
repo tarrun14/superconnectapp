@@ -1,6 +1,7 @@
 export default function SkeletonLoader({ type = "post" }) {
+  // Use CSS variables for shimmer so it adapts to Light/Dark mode
   const shimmerStyle = {
-    background: "linear-gradient(90deg, #1A1A1F 25%, #2A2A2F 50%, #1A1A1F 75%)",
+    background: "linear-gradient(90deg, var(--bg-input) 25%, var(--border) 50%, var(--bg-input) 75%)",
     backgroundSize: "200% 100%",
     animation: "shimmer 1.5s infinite"
   };
@@ -11,11 +12,11 @@ export default function SkeletonLoader({ type = "post" }) {
       <div style={{ padding: "80px 24px", maxWidth: "1000px", margin: "0 auto" }}>
         <div style={{ height: "40px", width: "250px", borderRadius: "8px", marginBottom: "30px", ...shimmerStyle }} />
         
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden", marginBottom: "48px" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", overflow: "hidden", marginBottom: "48px" }}>
           {/* Banner */}
           <div style={{ height: "100px", width: "100%", ...shimmerStyle }} />
           {/* Avatar */}
-          <div style={{ width: "88px", height: "88px", borderRadius: "50%", border: "3px solid #0F0F11", marginTop: "-40px", marginLeft: "24px", ...shimmerStyle }} />
+          <div style={{ width: "88px", height: "88px", borderRadius: "50%", border: "3px solid var(--bg-app)", marginTop: "-40px", marginLeft: "24px", ...shimmerStyle }} />
           
           <div style={{ padding: "16px 24px 24px" }}>
             {/* Name and Email */}
@@ -40,8 +41,8 @@ export default function SkeletonLoader({ type = "post" }) {
     // SKELETON FOR PROJECT CARDS
     return (
       <div style={{
-        background: "#1A1A1F",
-        border: "1px solid #2A2A2F",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
         borderRadius: "12px",
         padding: "24px",
         display: "flex",
@@ -58,11 +59,11 @@ export default function SkeletonLoader({ type = "post" }) {
   if (type === "block") {
     return (
       <div style={{
-        background: "#1A1A1F",
+        background: "var(--bg-card)",
         padding: "24px",
         borderRadius: "12px",
         marginBottom: "16px",
-        border: "1px solid #2A2A2F",
+        border: "1px solid var(--border)",
         display: "flex",
         flexDirection: "column",
         gap: "16px",
@@ -77,8 +78,8 @@ export default function SkeletonLoader({ type = "post" }) {
   // Default type: "post" or "card"
   return (
     <div style={{
-      background: "#1A1A1F",
-      border: "1px solid #2A2A2F",
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
       borderRadius: "12px",
       padding: "16px",
       marginBottom: "20px",
