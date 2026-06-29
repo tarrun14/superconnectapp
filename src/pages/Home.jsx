@@ -40,6 +40,7 @@ const styles = `
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border);
     padding: 28px 28px 80px 28px;
+    z-index: 2;
   }
   .left-sidebar::-webkit-scrollbar {
     display: none;

@@ -5,13 +5,13 @@
 
 .navbar {
   height: 60px;
-  background: #111114;
-  color: #F4F4F5;
+  background: var(--bg-navbar);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid #2A2A2F;
+  border-bottom: 1px solid var(--border);
 }
 
 .main-container {
@@ -20,11 +20,11 @@
 
 .sidebar {
   width: 200px;
-  background: #1A1A1F;
-  color: #F4F4F5;
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
   padding: 20px;
   height: 100vh;
-  border-right: 1px solid #2A2A2F;
+  border-right: 1px solid var(--border);
 }
 
 .feed-container {
@@ -38,12 +38,12 @@
 }
 
 .post-card {
-  background: #1A1A1F;
-  color: #F4F4F5;
+  background: var(--bg-card);
+  color: var(--text-primary);
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 10px;
-  border: 1px solid #2A2A2F;
+  border: 1px solid var(--border);
 }
 
 .post-image {
@@ -60,7 +60,7 @@
     width: 100%;
     height: auto;
     border-right: none;
-    border-bottom: 1px solid #2A2A2F;
+    border-bottom: 1px solid var(--border);
   }
   .feed-container {
     padding: 12px;

@@ -205,8 +205,8 @@ const styles = `
   }
 
   .my-post-card {
-    background: #1A1A1F;
-    border: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px;
     position: relative;
@@ -247,14 +247,14 @@ const styles = `
   .my-post-username {
     font-weight: 600;
     font-size: 1rem;
-    color: #F4F4F5;
+    color: var(--text-primary);
   }
 
   .my-post-content {
     margin-top: 12px;
     font-size: 0.95rem;
     line-height: 1.6;
-    color: #A1A1AA;
+    color: var(--text-secondary);
   }
 
   .my-post-tags {
@@ -292,11 +292,11 @@ const styles = `
   }
 
   .my-post-like {
-    background: #0F0F11;
+    background: var(--bg-input);
     border: 1px solid var(--border);
     padding: 6px 14px;
     border-radius: 20px;
-    color: var(--ink);
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-weight: 500;
     font-family: 'Inter', sans-serif;
@@ -306,7 +306,7 @@ const styles = `
   .my-post-comments-btn {
     background: none;
     border: none;
-    color: #A1A1AA;
+    color: var(--text-secondary);
     font-size: 13px;
     cursor: pointer;
     font-weight: 500;
@@ -377,7 +377,7 @@ const styles = `
   .my-post-comments-container {
     max-height: 140px;
     overflow-y: auto;
-    background: #0F0F11;
+    background: var(--bg-input);
     padding: 12px 16px;
     border-radius: 8px;
     margin-top: 12px;
@@ -389,7 +389,7 @@ const styles = `
     border-bottom: 1px solid var(--border);
     font-size: 0.9rem;
     line-height: 1.4;
-    color: #A1A1AA;
+    color: var(--text-secondary);
   }
 
   .my-post-comment-item:last-child {
@@ -416,10 +416,10 @@ const styles = `
     padding: 10px 14px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: #0F0F11;
+    background: var(--bg-input);
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
-    color: #F4F4F5;
+    color: var(--text-primary);
     outline: none;
     transition: border-color 0.2s ease;
   }

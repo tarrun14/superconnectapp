@@ -8,8 +8,8 @@ const styles = `
   /* Same layout styles as Home.jsx */
   .home-root {
     min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--bg-app);
+    color: var(--text-primary);
     position: relative;
     display: flex;
     flex-direction: row;
@@ -40,9 +40,10 @@ const styles = `
     flex-direction: column;
     gap: 20px;
     scrollbar-width: none;
-    background: #1A1A1F;
-    border-right: 1px solid #2A2A2F;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
     border-radius: 0 12px 12px 0;
+    z-index: 2;
   }
   .left-sidebar::-webkit-scrollbar { display: none; }
 
@@ -50,7 +51,7 @@ const styles = `
   .ls-heading {
     font-size: 11px;
     font-weight: 700;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     letter-spacing: 0.05em;
     text-transform: uppercase;
     margin-bottom: -8px;
@@ -65,12 +66,12 @@ const styles = `
     align-items: center;
     gap: 12px;
     text-decoration: none;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 8px;
     border-radius: 8px;
     transition: background 0.2s;
   }
-  .ls-project:hover { background: rgba(255,255,255,0.05); }
+  .ls-project:hover { background: var(--bg-card); }
   .ls-project img, .ls-project-placeholder {
     width: 32px;
     height: 32px;
@@ -89,7 +90,7 @@ const styles = `
     border-radius: 8px;
     transition: background 0.2s;
   }
-  .rs-user:hover { background: rgba(255,255,255,0.05); }
+  .rs-user:hover { background: var(--bg-card); }
   .rs-user img, .rs-user-placeholder {
     width: 36px;
     height: 36px;
@@ -107,8 +108,8 @@ const styles = `
     font-size: 14px;
   }
   .rs-user-info { flex: 1; min-width: 0; }
-  .rs-user-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rs-user-occ { font-size: 11px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rs-user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rs-user-occ { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rs-btn {
     background: var(--accent);
     color: white;
@@ -139,12 +140,12 @@ const styles = `
   .explore-title {
     font-size: 24px;
     font-weight: 700;
-    color: white;
+    color: var(--text-primary);
     margin: 0 0 4px 0;
   }
   .explore-subtitle {
     font-size: 14px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin: 0;
   }
 
@@ -152,7 +153,7 @@ const styles = `
   .explore-search {
     display: flex;
     align-items: center;
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px 16px;
@@ -167,14 +168,14 @@ const styles = `
     flex: 1;
     background: transparent;
     border: none;
-    color: white;
+    color: var(--text-primary);
     font-size: 14px;
     font-family: 'Inter', sans-serif;
     outline: none;
   }
-  .explore-search-input::placeholder { color: var(--ink-muted); }
+  .explore-search-input::placeholder { color: var(--text-secondary); }
   .explore-search-icon {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     width: 18px;
     height: 18px;
   }
@@ -190,7 +191,7 @@ const styles = `
   .feed-tab {
     background: transparent;
     border: none;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
     padding: 8px 16px;
@@ -198,7 +199,7 @@ const styles = `
     cursor: pointer;
     transition: all 0.2s;
   }
-  .feed-tab:hover { color: white; background: rgba(255,255,255,0.05); }
+  .feed-tab:hover { color: var(--text-primary); background: var(--border); }
   .feed-tab.active { background: var(--accent); color: white; }
 
   @media (max-width: 900px) {
