@@ -4,7 +4,6 @@ import { supabase } from "../supabaseClient";
 import CreatePost from "../components/CreatePost";
 import Feed from "../components/Feed";
 import BackgroundParticles from "../components/BackgroundParticles";
-import SkeletonLoader from "../components/SkeletonLoader";
 
 const styles = `
   :root {
@@ -399,10 +398,9 @@ const styles = `
   }
 `;
 
-const Home = () => {
+export default function Home() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
   // Left Sidebar Data
@@ -440,7 +438,6 @@ const Home = () => {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
     }
   };
 
@@ -725,5 +722,3 @@ const Home = () => {
     </>
   );
 };
-
-export default Home;

@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import Feed from "../components/Feed";
-import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const styles = `
   /* Same layout styles as Home.jsx */
@@ -209,13 +208,11 @@ const styles = `
 
 export default function ExplorePage() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   // Feed state
   const [feedType, setFeedType] = useState('All'); // All, Posts, Projects
   const [searchText, setSearchText] = useState("");
   const [searchTrigger, setSearchTrigger] = useState("");
-  const [refresh, setRefresh] = useState(false);
 
   // Sidebar state
   const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -262,8 +259,6 @@ export default function ExplorePage() {
     const { data: tProjects } = await projectQuery;
     const filteredProjects = (tProjects || []).filter(p => !pFollowingIds.includes(p.id)).slice(0, 4);
     setTrendingProjects(filteredProjects);
-
-    setLoading(false);
   };
 
   const handleFollowUser = async (targetId) => {
@@ -386,7 +381,6 @@ export default function ExplorePage() {
 
             {/* THE GLOBAL FEED */}
             <Feed
-              refresh={refresh}
               feedType={feedType}
               currentUser={currentUser}
               search={searchTrigger}
