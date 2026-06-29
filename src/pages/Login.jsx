@@ -60,7 +60,7 @@ const Login = () => {
     }
     setResetLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-      redirectTo: 'https://superconnectapp-v98y.vercel.app/#/reset-password'
+      redirectTo: `${window.location.origin}/#/reset-password`
     })
     setResetLoading(false)
     if (error) {

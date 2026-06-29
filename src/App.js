@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { HashRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "./supabaseClient";
+import { supabase, wasRecoveryDetected, clearRecoveryFlag } from "./supabaseClient";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -28,14 +28,51 @@ function Layout() {
   const showNavbar = !NO_NAVBAR_ROUTES.includes(location.pathname);
 
   useEffect(() => {
+    // Local flag shared by both event handlers in this closure.
+    // This prevents SIGNED_IN from overriding PASSWORD_RECOVERY in the
+    // same event-loop tick (React hasn't re-rendered yet, so location.pathname is stale).
+    let isRecovery = false;
+
+    // Check 1: Was recovery detected at module-load time (before React mounted)?
+    if (wasRecoveryDetected()) {
+      isRecovery = true;
+      navigate("/reset-password");
+    }
+
+    // Check 2: Does the URL hash still contain recovery tokens?
+    if (!isRecovery && window.location.hash.includes('type=recovery')) {
+      isRecovery = true;
+      navigate("/reset-password");
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        isRecovery = true;
+        navigate("/reset-password");
+        return;
+      }
       if (event === "SIGNED_IN") {
+        // If we're in a recovery flow, DO NOT redirect to /home.
+        // Check local flag, react router path, AND raw window URL to be absolutely safe.
+        const currentUrl = window.location.href;
+        if (
+          isRecovery || 
+          location.pathname === "/reset-password" || 
+          currentUrl.includes("reset-password") || 
+          currentUrl.includes("type=recovery")
+        ) {
+          return;
+        }
         navigate("/home");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      subscription.unsubscribe();
+      // Clear the module-level flag so future logins aren't affected
+      if (isRecovery) clearRecoveryFlag();
+    };
+  }, [navigate, location.pathname]);
 
   return (
     <>
