@@ -13,43 +13,79 @@ const ResetPassword = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const hash = window.location.hash
-    // Extract everything after access_token= (including access_token itself)
-    const tokenStartIndex = hash.indexOf('access_token=')
-    
+    let handled = false;
+
+    // Approach 1: Listen for Supabase auth events.
+    // Supabase v2 auto-detects recovery tokens in the URL fragment and fires
+    // PASSWORD_RECOVERY followed by SIGNED_IN. This is the most reliable method.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (handled) return;
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        if (session) {
+          handled = true;
+          setSessionReady(true);
+        }
+      }
+    });
+
+    // Approach 2: Manual hash parsing as fallback.
+    // If the token is in the hash but Supabase hasn't auto-processed it yet.
+    const hash = window.location.hash;
+    const tokenStartIndex = hash.indexOf('access_token=');
+
     if (tokenStartIndex !== -1) {
-      const tokenStr = hash.substring(tokenStartIndex)
-      const params = new URLSearchParams(tokenStr)
-      const access_token = params.get('access_token')
-      const refresh_token = params.get('refresh_token')
-      const type = params.get('type')
+      const tokenStr = hash.substring(tokenStartIndex);
+      const params = new URLSearchParams(tokenStr);
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+      const type = params.get('type');
 
       if (access_token && refresh_token && type === 'recovery') {
         supabase.auth.setSession({
           access_token,
           refresh_token
         }).then(({ data, error }) => {
+          if (handled) return;
           if (error) {
-            setMessageType('error')
-            setMessage('Invalid or expired reset link. Please request a new one.')
+            setMessageType('error');
+            setMessage('Invalid or expired reset link. Please request a new one.');
           }
-          setSessionReady(true)
-        })
-        return
+          handled = true;
+          setSessionReady(true);
+        });
+        return () => subscription.unsubscribe();
       }
     }
 
-    // Fallback if no token in URL
+    // Approach 3: Check if a session already exists (e.g., Supabase processed
+    // the token before React mounted this component).
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (handled) return;
       if (session) {
-        setSessionReady(true)
+        handled = true;
+        setSessionReady(true);
       } else {
-        setMessageType('error')
-        setMessage('Invalid or expired reset link. Please request a new one.')
-        setSessionReady(true)
+        // Wait a moment for Supabase to finish processing the URL tokens
+        setTimeout(() => {
+          if (handled) return;
+          supabase.auth.getSession().then(({ data: { session: s } }) => {
+            if (handled) return;
+            if (s) {
+              handled = true;
+              setSessionReady(true);
+            } else {
+              setMessageType('error');
+              setMessage('Invalid or expired reset link. Please request a new one.');
+              handled = true;
+              setSessionReady(true);
+            }
+          });
+        }, 1500);
       }
-    })
-  }, [])
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleReset = async (e) => {
     e.preventDefault()
