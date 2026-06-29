@@ -2,11 +2,11 @@
    PAGE BACKGROUND
 ========================= */
 :root {
-  --bg: #0F0F11;
-  --surface: #1A1A1F;
+  --bg-app: #0F0F11;
+  --bg-card: #1A1A1F;
   --border: #2A2A2F;
-  --ink: #F4F4F5;
-  --ink-muted: #A1A1AA;
+  --text-primary: #F4F4F5;
+  --text-secondary: #A1A1AA;
   --accent: #7C3AED;
   --accent-hover: #6D28D9;
   --shadow: 0 12px 40px rgba(0,0,0,0.3);
@@ -18,9 +18,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--bg);
+  background: var(--bg-app);
   font-family: 'Inter', sans-serif;
-  color: var(--ink);
+  color: var(--text-primary);
   padding: 20px;
 }
 
@@ -32,7 +32,7 @@
   max-width: 420px;
   padding: 40px;
   border-radius: 16px;
-  background: var(--surface);
+  background: var(--bg-card);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   border-top: 2px solid var(--accent);
@@ -68,7 +68,7 @@
 }
 
 .login-header p {
-  color: var(--ink-muted);
+  color: var(--text-secondary);
   font-size: 0.95rem;
   margin-bottom: 24px;
 }
@@ -94,7 +94,7 @@
   font-size: 0.95rem;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  color: var(--ink);
+  color: var(--text-primary);
   transition: all var(--transition);
 }
 
@@ -107,9 +107,9 @@
 }
 
 .social-btn.github {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
+  background: var(--text-primary);
+  color: var(--bg-app);
+  border-color: var(--text-primary);
 }
 
 .social-btn:hover {
@@ -132,7 +132,7 @@
 .divider {
   margin: 24px 0;
   font-size: 0.8rem;
-  color: var(--ink-muted);
+  color: var(--text-secondary);
   position: relative;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -140,7 +140,7 @@
 }
 
 .divider span {
-  background: var(--surface);
+  background: var(--bg-card);
   padding: 0 16px;
 }
 
@@ -170,7 +170,7 @@
   border-radius: 8px;
   padding: 12px 14px;
   margin-bottom: 16px;
-  background: var(--bg);
+  background: var(--bg-app);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
@@ -191,11 +191,11 @@
   width: 100%;
   font-size: 0.95rem;
   font-family: 'Inter', sans-serif;
-  color: var(--ink);
+  color: var(--text-primary);
 }
 
 .input-group input::placeholder {
-  color: var(--ink-muted);
+  color: var(--text-secondary);
   opacity: 0.7;
 }
 
@@ -256,7 +256,7 @@
 .signup-link {
   margin-top: 24px;
   font-size: 0.95rem;
-  color: var(--ink-muted);
+  color: var(--text-secondary);
 }
 
 .signup-link a {

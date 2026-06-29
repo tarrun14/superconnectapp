@@ -6,8 +6,8 @@ export default function SkeletonLoader({ type = "card" }) {
         <div style={{ height: "40px", width: "250px", background: "var(--border)", borderRadius: "8px", marginBottom: "30px" }} />
         
         {/* Placeholder Blocks */}
-        <div style={{ height: "200px", width: "100%", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "12px", marginBottom: "20px" }} />
-        <div style={{ height: "200px", width: "100%", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "12px", marginBottom: "20px" }} />
+        <div style={{ height: "200px", width: "100%", background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "12px", marginBottom: "20px" }} />
+        <div style={{ height: "200px", width: "100%", background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "12px", marginBottom: "20px" }} />
       </div>
     );
   }
@@ -15,7 +15,7 @@ export default function SkeletonLoader({ type = "card" }) {
   if (type === "block") {
     return (
       <div style={{
-        background: "var(--surface)",
+        background: "var(--bg-card)",
         padding: "24px",
         borderRadius: "12px",
         marginBottom: "16px",
@@ -36,7 +36,7 @@ export default function SkeletonLoader({ type = "card" }) {
   // Default type: "card"
   return (
     <div style={{
-      background: "var(--surface)",
+      background: "var(--bg-card)",
       padding: "24px",
       borderRadius: "12px",
       marginBottom: "24px",

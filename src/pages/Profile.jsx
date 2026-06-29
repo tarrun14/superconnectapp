@@ -6,26 +6,13 @@ import BackgroundParticles from "../components/BackgroundParticles";
 import FollowModals from "../components/FollowModals";
 
 const styles = `
-  :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
-    --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
-    --accent: #7C3AED;
-    --accent-hover: #6D28D9;
-    --shadow: 0 4px 12px rgba(0,0,0,0.2);
-    --radius: 12px;
-    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   .profile-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding: 80px 24px 80px;
   }
 
@@ -34,7 +21,7 @@ const styles = `
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    background: #0F0F1180;
+    background: transparent;
   }
   
   .profile-inner::before, .profile-inner::after {
@@ -49,12 +36,12 @@ const styles = `
   
   .profile-inner::before {
     left: 0;
-    background: linear-gradient(to right, #0F0F11, transparent);
+    background: linear-gradient(to right, var(--bg-app), transparent);
   }
   
   .profile-inner::after {
     right: 0;
-    background: linear-gradient(to left, #0F0F11, transparent);
+    background: linear-gradient(to left, var(--bg-app), transparent);
   }
 
   .profile-header {
@@ -72,7 +59,7 @@ const styles = `
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   .profile-header .dot {
@@ -82,7 +69,7 @@ const styles = `
   .section-label {
     font-size: 15px;
     font-weight: bold;
-    color: white;
+    color: var(--text-primary);
     text-transform: uppercase;
     margin-bottom: 16px;
     border-left: 3px solid #7C3AED;
@@ -90,7 +77,7 @@ const styles = `
   }
 
   .create-section {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 28px;
@@ -107,12 +94,12 @@ const styles = `
 
   .form-field {
     width: 100%;
-    background: var(--bg);
+    background: var(--bg-app);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px 16px;
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     font-size: 0.95rem;
     transition: border-color var(--transition);
     outline: none;
@@ -124,7 +111,7 @@ const styles = `
   }
   
   .form-field::placeholder {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
 
   .btn-create {
@@ -148,7 +135,7 @@ const styles = `
   }
 
   .project-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 24px;
@@ -181,7 +168,7 @@ const styles = `
 
   .delete-btn:hover { 
     background: #EF4444; 
-    color: white; 
+    color: var(--text-primary);
   }
 
   .file-label {
@@ -190,7 +177,7 @@ const styles = `
     gap: 8px;
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 10px 16px;
     border-radius: 8px;
@@ -244,7 +231,7 @@ const styles = `
     margin-bottom: 48px;
   }
   .profile-card {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -255,7 +242,7 @@ const styles = `
   .profile-banner {
     position: relative;
     height: 100px;
-    background: linear-gradient(135deg, #1A1A1F, #2D1B69);
+    background: linear-gradient(135deg, var(--bg-card), #2D1B69);
     width: 100%;
     background-size: cover;
     background-position: center;
@@ -290,7 +277,7 @@ const styles = `
     border-radius: 50%;
     margin-top: -40px;
     margin-left: 24px;
-    border: 3px solid #0F0F11;
+    border: 3px solid var(--bg-app);
     cursor: pointer;
     overflow: hidden;
     flex-shrink: 0;
@@ -304,7 +291,7 @@ const styles = `
     justify-content: center;
     opacity: 0;
     transition: opacity 0.2s;
-    color: white;
+    color: var(--text-primary);
     font-size: 14px;
   }
   .avatar-wrapper:hover .avatar-overlay {
@@ -314,7 +301,7 @@ const styles = `
     width: 100%;
     height: 100%;
     background: var(--accent);
-    color: white;
+    color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-weight: 700;
     font-size: 36px;
@@ -331,16 +318,16 @@ const styles = `
     font-family: 'Inter', sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--text-primary);
     margin-bottom: 2px;
   }
   .profile-email {
     font-size: 1rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
   .profile-meta {
     font-size: 0.95rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -387,7 +374,7 @@ const styles = `
   }
   .btn-add-skill {
     background: var(--accent);
-    color: white;
+    color: var(--text-primary);
     border: none;
     border-radius: 8px;
     padding: 8px 16px;
@@ -399,7 +386,7 @@ const styles = `
   .btn-add-skill:hover { background: var(--accent-hover); }
   .skill-limit-text {
     font-size: 12px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-top: 4px;
   }
 
@@ -816,7 +803,7 @@ export default function Profile() {
                      <button className="btn-create" onClick={handleSaveProfile} disabled={savingProfile}>
                        {savingProfile ? "Saving..." : "Save"}
                      </button>
-                     <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer', color: 'var(--ink)' }}>
+                     <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer', color: 'var(--text-primary)' }}>
                        Cancel
                      </button>
                    </div>
@@ -839,17 +826,17 @@ export default function Profile() {
                     
                    <div className="profile-stats" style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setModalType('followers')}>
-                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{followersCount}</span>
+                       <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '18px' }}>{followersCount}</span>
                        <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Followers</span>
                      </div>
                      <div style={{ width: '1px', height: '32px', background: 'var(--border)' }}></div>
                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => setModalType('following')}>
-                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{followingCount}</span>
+                       <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '18px' }}>{followingCount}</span>
                        <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Following</span>
                      </div>
                      <div style={{ width: '1px', height: '32px', background: 'var(--border)' }}></div>
                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                       <span style={{ color: 'white', fontWeight: 'bold', fontSize: '18px' }}>{projects.length}</span>
+                       <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '18px' }}>{projects.length}</span>
                        <span style={{ color: '#A1A1AA', fontSize: '13px', marginTop: '4px' }}>Projects</span>
                      </div>
                    </div>
@@ -913,7 +900,7 @@ export default function Profile() {
             <p className="section-label">My Projects ({projects.length})</p>
             <div className="projects-list">
               {projects.length === 0 ? (
-                <p style={{ color: "var(--ink-muted)" }}>No projects yet.</p>
+                <p style={{ color: "var(--text-secondary)" }}>No projects yet.</p>
               ) : (
                 projects.map((proj) => (
                   <div
@@ -940,7 +927,7 @@ export default function Profile() {
                     </div>
                     <h4>{proj.title}</h4>
                     {proj.description && (
-                      <p style={{ fontSize: "0.9rem", marginTop: "8px", color: "var(--ink-muted)" }}>
+                      <p style={{ fontSize: "0.9rem", marginTop: "8px", color: "var(--text-secondary)" }}>
                         {proj.description}
                       </p>
                     )}

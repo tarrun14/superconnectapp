@@ -6,11 +6,11 @@ import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
   :root {
-    --bg: #0F0F11;
-    --surface: #1A1A1F;
+    --bg-app: #0F0F11;
+    --bg-card: #1A1A1F;
     --border: #2A2A2F;
-    --ink: #F4F4F5;
-    --ink-muted: #A1A1AA;
+    --text-primary: #F4F4F5;
+    --text-secondary: #A1A1AA;
     --accent: #7C3AED;
     --accent-hover: #6D28D9;
     --shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -22,9 +22,9 @@ const styles = `
 
   .pp-root {
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-app);
     font-family: 'Inter', sans-serif;
-    color: var(--ink);
+    color: var(--text-primary);
     padding-bottom: 80px;
     position: relative;
     z-index: 1;
@@ -125,7 +125,7 @@ const styles = `
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
 
   .creator-avatar {
@@ -137,14 +137,14 @@ const styles = `
 
   .pp-header p {
     font-size: 1rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     font-weight: 400;
     line-height: 1.6;
   }
 
   .btn-follow {
-    background: var(--surface);
-    color: var(--ink);
+    background: var(--bg-card);
+    color: var(--text-primary);
     border: 1px solid var(--border);
     padding: 8px 16px;
     border-radius: 8px;
@@ -171,13 +171,13 @@ const styles = `
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     margin-bottom: 16px;
   }
 
   /* ── Community card ── */
   .community-section {
-    background: var(--surface);
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -229,17 +229,17 @@ const styles = `
   .message-author {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--text-primary);
   }
 
   .message-timestamp {
     font-size: 0.75rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
 
   .message-text {
     font-size: 0.95rem;
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 400;
     line-height: 1.5;
   }
@@ -261,7 +261,7 @@ const styles = `
     justify-content: center;
     flex-direction: column;
     gap: 8px;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
   }
 
   .feed-empty .empty-icon { font-size: 2rem; opacity: 0.3; margin-bottom: 8px; }
@@ -287,12 +287,12 @@ const styles = `
     outline: none;
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
-    color: var(--ink);
+    color: var(--text-primary);
     font-weight: 400;
   }
 
   .composer-input::placeholder {
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     opacity: 0.7;
   }
 
@@ -339,7 +339,7 @@ const styles = `
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.02em;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 6px 12px;
     border-radius: 6px;
@@ -405,7 +405,7 @@ const styles = `
     min-height: 60vh;
     font-family: 'Inter', sans-serif;
     font-size: 1.1rem;
-    color: var(--ink-muted);
+    color: var(--text-secondary);
     letter-spacing: 0.04em;
   }
 `;

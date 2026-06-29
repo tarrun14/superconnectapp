@@ -301,7 +301,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
     <div>
       <style>{`
         .empty-feed-card {
-          background: var(--surface);
+          background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 12px;
           padding: 32px 24px;
@@ -311,12 +311,12 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         .empty-feed-title {
           font-size: 16px;
           font-weight: bold;
-          color: white;
+          color: var(--text-primary);
           margin-bottom: 8px;
         }
         .empty-feed-subtitle {
           font-size: 14px;
-          color: var(--ink-muted);
+          color: var(--text-secondary);
           margin-bottom: 24px;
         }
         .suggestion-list {
@@ -330,7 +330,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
           align-items: center;
           gap: 12px;
           padding: 12px;
-          background: rgba(255,255,255,0.03);
+          background: transparent;
           border-radius: 8px;
           border: 1px solid var(--border);
         }
@@ -349,8 +349,8 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
           font-weight: bold;
         }
         .suggestion-info { flex: 1; }
-        .suggestion-name { font-size: 14px; font-weight: bold; color: white; }
-        .suggestion-meta { font-size: 12px; color: var(--ink-muted); }
+        .suggestion-name { font-size: 14px; font-weight: bold; color: var(--text-primary); }
+        .suggestion-meta { font-size: 12px; color: var(--text-secondary); }
         .suggestion-btn {
           background: var(--accent);
           color: white;
@@ -402,7 +402,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
 
           {/* ALL & POSTS: following someone but nothing to show */}
           {(feedType === 'All' || feedType === 'Posts') && posts.length === 0 && suggestedUsers.length === 0 && (
-            <p style={{ color: "var(--ink-muted)", fontStyle: "italic", fontSize: "0.9rem", textAlign: "center", padding: "20px" }}>
+            <p style={{ color: "var(--text-secondary)", fontStyle: "italic", fontSize: "0.9rem", textAlign: "center", padding: "20px" }}>
               No posts yet from people you follow.
             </p>
           )}

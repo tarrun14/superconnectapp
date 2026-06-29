@@ -104,7 +104,7 @@ export default function CreatePost({ onPostCreated }) {
   return (
     <div style={{
       marginBottom: "24px",
-      background: "var(--surface)",
+      background: "var(--bg-card)",
       border: "1px solid var(--border)",
       borderRadius: "12px",
       padding: "20px",
@@ -120,10 +120,10 @@ export default function CreatePost({ onPostCreated }) {
           padding: "16px",
           borderRadius: "8px",
           border: "1px solid var(--border)",
-          background: "var(--bg)",
+          background: "var(--bg-input)",
           fontFamily: "'Inter', sans-serif",
           fontSize: "0.95rem",
-          color: "var(--ink)",
+          color: "var(--text-primary)",
           resize: "none",
           minHeight: "100px",
           outline: "none",
@@ -150,8 +150,8 @@ export default function CreatePost({ onPostCreated }) {
               padding: "8px 12px",
               borderRadius: "6px",
               border: "1px solid var(--border)",
-              background: "var(--bg)",
-              color: "var(--ink)",
+              background: "var(--bg-input)",
+              color: "var(--text-primary)",
               fontFamily: "'Inter', sans-serif",
               fontSize: "0.85rem",
               cursor: "pointer",
@@ -176,8 +176,8 @@ export default function CreatePost({ onPostCreated }) {
               padding: "8px 12px",
               borderRadius: "6px",
               border: "1px solid var(--border)",
-              background: "var(--bg)",
-              color: "var(--ink)",
+              background: "var(--bg-input)",
+              color: "var(--text-primary)",
               fontFamily: "'Inter', sans-serif",
               fontSize: "0.85rem",
               cursor: "pointer",
@@ -202,7 +202,7 @@ export default function CreatePost({ onPostCreated }) {
           display: "inline-flex",
           alignItems: "center",
           gap: "8px",
-          color: "var(--ink-muted)",
+          color: "var(--text-secondary)",
           cursor: "pointer",
           fontSize: "0.9rem",
           fontWeight: "500",
@@ -217,7 +217,7 @@ export default function CreatePost({ onPostCreated }) {
           e.currentTarget.style.backgroundColor = "rgba(124, 58, 237, 0.08)";
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.color = "var(--ink-muted)";
+          e.currentTarget.style.color = "var(--text-secondary)";
           e.currentTarget.style.backgroundColor = "transparent";
         }}
         >
@@ -243,7 +243,7 @@ export default function CreatePost({ onPostCreated }) {
           style={{
             padding: "10px 24px",
             borderRadius: "8px",
-            background: loading ? "var(--ink-muted)" : "var(--accent)",
+            background: loading ? "var(--text-secondary)" : "var(--accent)",
             color: "#fff",
             border: "none",
             fontWeight: "600",
