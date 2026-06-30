@@ -537,7 +537,6 @@ export default function ProjectPage() {
 
   const [project, setProject] = useState(null);
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [msgText, setMsgText] = useState("");
   const [image, setImage] = useState(null);
@@ -557,12 +556,7 @@ export default function ProjectPage() {
       setUser(currentUser);
 
       if (currentUser) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, avatar_url")
-          .eq("id", currentUser.id)
-          .single();
-        setUserProfile(profile);
+        // userProfile was unused, removed fetch
       }
 
       fetchProject(currentUser);
