@@ -942,13 +942,20 @@ export default function ProjectPage() {
       });
       if (!error) {
         setRequestStatus('pending');
+        // Fetch the user's name for the notification
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+
         // Add notification for creator
         await supabase.from('notifications').insert({
           user_id: project.user_id,
           from_user_id: user.id,
           type: 'access_request',
           project_id: id,
-          message: `${userProfile?.name || 'A user'} requested to join your project ${project.title}`
+          message: `${profile?.name || 'A user'} requested to join your project ${project.title}`
         });
       }
     } catch (err) {
