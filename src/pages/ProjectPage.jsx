@@ -446,7 +446,7 @@ export default function ProjectPage() {
 
   const fetchProject = async () => {
     const { data } = await supabase
-      .from("projects").select("*, profiles(name, avatar_url)").eq("id", id).single();
+      .from("projects").select("*, profiles(name, avatar_url, username)").eq("id", id).single();
     setProject(data);
     
     // Check follow status (optional, fails gracefully)
@@ -479,7 +479,7 @@ export default function ProjectPage() {
   const fetchMessages = async () => {
     const { data } = await supabase
       .from("project_messages")
-      .select("*, profiles(name, avatar_url)")
+      .select("*, profiles(name, avatar_url, username)")
       .eq("project_id", id)
       .order("created_at", { ascending: true });
     setMessages(data || []);

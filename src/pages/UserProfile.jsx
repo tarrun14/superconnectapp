@@ -518,7 +518,7 @@ export default function UserProfile() {
   const fetchUserPosts = async (userId) => {
     const { data, error } = await supabase
       .from("posts")
-      .select(`*, profiles(name, avatar_url)`)
+      .select(`*, profiles(name, avatar_url, username)`)
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
@@ -554,7 +554,7 @@ export default function UserProfile() {
   const fetchPostComments = async (postId) => {
     const { data } = await supabase
       .from("comments")
-      .select(`*, profiles(name, avatar_url)`)
+      .select(`*, profiles(name, avatar_url, username)`)
       .eq("post_id", postId)
       .order("created_at", { ascending: false });
     setPostComments(prev => ({ ...prev, [postId]: data || [] }));
