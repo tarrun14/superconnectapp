@@ -42,12 +42,13 @@ const styles = `
     background: rgba(124, 58, 237, 0.08);
   }
   .pd-card {
-    background: #1A1A1F;
-    border: 1px solid #2A2A2F;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 24px;
     max-width: 700px;
     margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
   .comments-section {
     margin-top: 24px;
@@ -109,7 +110,7 @@ const styles = `
   .comment-author-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--accent-light);
+    color: var(--text-primary);
   }
   .comment-time {
     font-size: 0.75rem;
@@ -132,7 +133,7 @@ const styles = `
     padding: 12px 16px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: var(--bg-input);
+    background: var(--bg-app);
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.95rem;
@@ -144,7 +145,10 @@ const styles = `
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
   }
   .detail-comment-box button {
-    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
     background: var(--accent);
     color: white;
     border: none;
