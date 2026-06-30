@@ -96,6 +96,26 @@ const styles = `
     border-right: 1px solid var(--border);
     gap: 16px;
   }
+  
+  .pp-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pp-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #EF4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 10px;
+    line-height: 1;
+    border: 2px solid var(--bg-card);
+  }
 
   .pp-project-title {
     font-size: 28px;
@@ -135,6 +155,24 @@ const styles = `
 
   .btn-track.tracking:hover {
     background: var(--accent-hover);
+  }
+  
+  .btn-settings {
+    flex-shrink: 0;
+    padding: 9px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-settings:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
   }
 
   /* ── Meta row ── */
@@ -212,6 +250,19 @@ const styles = `
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     border-radius: 0 0 12px 12px;
+  }
+  
+  .pp-access-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 24px 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  
+  .pp-access-info svg {
+    opacity: 0.7;
   }
 
   /* ── Section label ── */
@@ -374,6 +425,22 @@ const styles = `
     font-weight: 400;
     opacity: 0.55;
   }
+  
+  .pp-restricted {
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+  }
+  
+  .pp-restricted svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+    margin-bottom: 8px;
+  }
 
   /* ── Composer ── */
   .pp-composer {
@@ -383,6 +450,17 @@ const styles = `
     flex-direction: column;
     gap: 12px;
     background: #16161C;
+  }
+  
+  .pp-composer-restricted {
+    border-top: 1px solid var(--border);
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #16161C;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
   }
 
   .pp-composer-main {
@@ -444,6 +522,27 @@ const styles = `
     height: 14px;
     transform: rotate(-35deg);
     flex-shrink: 0;
+  }
+  
+  .btn-request {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn-request:hover:not(:disabled) {
+    background: rgba(124, 58, 237, 0.1);
+  }
+  .btn-request:disabled {
+    border-color: var(--border);
+    color: var(--text-secondary);
+    cursor: not-allowed;
   }
 
   /* ── Attach row ── */
@@ -537,6 +636,170 @@ const styles = `
   @keyframes pp-spin {
     to { transform: rotate(360deg); }
   }
+  
+  /* ── Settings Modal ── */
+  .pp-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .pp-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .pp-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pp-modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .pp-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .pp-modal-close:hover {
+    color: #fff;
+  }
+  .pp-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pp-settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pp-settings-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pp-settings-help {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .pp-settings-select {
+    background: #0F0F13;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+  }
+  .pp-settings-select:focus {
+    border-color: var(--accent);
+  }
+  
+  .pp-member-search {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .pp-member-search input {
+    flex: 1;
+    background: #0F0F13;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .pp-member-search button {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .pp-member-search button:hover {
+    background: #2A2A2F;
+  }
+  
+  .pp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .pp-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #0F0F13;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .pp-list-item-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pp-list-item-info img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .pp-list-item-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .pp-list-item-actions button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .pp-list-item-actions button:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+  .pp-list-item-actions .btn-approve:hover {
+    color: #10B981;
+    border-color: #10B981;
+  }
+  .pp-list-item-actions .btn-reject:hover {
+    color: #EF4444;
+    border-color: #EF4444;
+  }
 `;
 
 export default function ProjectPage() {
@@ -550,8 +813,23 @@ export default function ProjectPage() {
   const [msgText, setMsgText] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  
+  // Access state
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [requestStatus, setRequestStatus] = useState(null); // 'pending', 'approved', 'rejected'
+  const [pendingCount, setPendingCount] = useState(0);
+  
   const [isPosting, setIsPosting] = useState(false);
+
+  // Settings Modal state
+  const [showSettings, setShowSettings] = useState(false);
+  const [viewAccess, setViewAccess] = useState('all');
+  const [postAccess, setPostAccess] = useState('all');
+  const [members, setMembers] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -573,8 +851,8 @@ export default function ProjectPage() {
         setUserProfile(profile);
       }
 
-      fetchProject(currentUser);
-      fetchPosts();
+      await fetchProject(currentUser);
+      // Posts fetch moved to a useEffect that depends on project load and access checks
     } catch (err) {
       console.error(err);
     }
@@ -586,9 +864,15 @@ export default function ProjectPage() {
       .select("*, profiles(name, avatar_url)")
       .eq("id", id)
       .single();
-    setProject(data);
+      
+    if (data) {
+      setProject(data);
+      setViewAccess(data.view_access || 'all');
+      setPostAccess(data.post_access || 'all');
+    }
 
-    if (currentUser) {
+    if (currentUser && data) {
+      // Check tracker status
       const { data: followData } = await supabase
         .from("project_followers")
         .select("*")
@@ -596,6 +880,93 @@ export default function ProjectPage() {
         .eq("user_id", currentUser.id)
         .single();
       if (followData) setIsFollowing(true);
+      
+      // Check member status
+      const { data: memberData } = await supabase
+        .from("project_members")
+        .select("*")
+        .eq("project_id", id)
+        .eq("user_id", currentUser.id)
+        .single();
+      if (memberData) setIsMember(true);
+      
+      // Check request status - fetch the most recent request for this user
+      const { data: requestData } = await supabase
+        .from("project_access_requests")
+        .select("*")
+        .eq("project_id", id)
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+        
+      if (requestData && requestData.length > 0) {
+        if (requestData[0].status === 'pending') {
+          setRequestStatus('pending');
+        } else {
+          setRequestStatus(null); // allow requesting again if approved but not member, or rejected
+        }
+      }
+      
+      if (currentUser.id === data.user_id) {
+        const { count } = await supabase
+          .from("project_access_requests")
+          .select("*", { count: 'exact', head: true })
+          .eq("project_id", id)
+          .eq("status", "pending");
+        setPendingCount(count || 0);
+      }
+    }
+  };
+  
+  const isCreator = user && project && user.id === project.user_id;
+
+  const checkAccess = (accessLevel) => {
+    if (!project) return false;
+    if (isCreator) return true;
+    if (accessLevel === 'all') return true;
+    if (accessLevel === 'members') return isMember;
+    if (accessLevel === 'trackers') return isMember || isFollowing;
+    return false;
+  };
+
+  const canView = checkAccess(project?.view_access || 'all');
+  const canPost = checkAccess(project?.post_access || 'all');
+  
+  const showRequestJoin = user && !isCreator && !isMember && (project?.view_access === 'members' || project?.post_access === 'members');
+
+  // Refetch posts when access logic changes
+  useEffect(() => {
+    if (project) {
+       if (canView) {
+         fetchPosts();
+       } else {
+         setPosts([]);
+       }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project, isFollowing, isMember]);
+
+  const handleRequestAccess = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from('project_access_requests').insert({
+        project_id: id,
+        user_id: user.id,
+        status: 'pending'
+      });
+      if (!error) {
+        setRequestStatus('pending');
+        // Add notification for creator
+        await supabase.from('notifications').insert({
+          user_id: project.user_id,
+          from_user_id: user.id,
+          type: 'access_request',
+          project_id: id,
+          message: `${userProfile?.name || 'A user'} requested to join your project ${project.title}`
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -614,8 +985,6 @@ export default function ProjectPage() {
     }
   };
 
-  // Fetch posts linked to this project (project_id column)
-  // Falls back to project_messages if project_id column doesn't exist yet
   const fetchPosts = async () => {
     try {
       // Try fetching from posts table with project_id
@@ -690,7 +1059,6 @@ export default function ProjectPage() {
       }
 
       // Insert into posts table with project_id
-      // If the column doesn't exist yet, fallback to project_messages
       const { error: postError } = await supabase.from("posts").insert([{
         user_id: user.id,
         content: msgText,
@@ -743,6 +1111,108 @@ export default function ProjectPage() {
     if (diffDays < 7) return `${diffDays}d ago`;
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
+  
+  // Settings Logic
+  const openSettings = async () => {
+    setShowSettings(true);
+    fetchSettingsData();
+  };
+  
+  const fetchSettingsData = async () => {
+    // Fetch members
+    const { data: memData, error: memError } = await supabase
+      .from('project_members')
+      .select('*, profiles!project_members_user_id_fkey(name, avatar_url)')
+      .eq('project_id', id);
+    if (memError) console.error("Error fetching members:", memError);
+    setMembers(memData || []);
+    
+    // Fetch pending requests
+    const { data: reqData } = await supabase
+      .from('project_access_requests')
+      .select('*, profiles(name, avatar_url)')
+      .eq('project_id', id)
+      .eq('status', 'pending');
+    setPendingRequests(reqData || []);
+    setPendingCount((reqData || []).length);
+  };
+
+  const saveSettings = async () => {
+    await supabase.from('projects').update({
+      view_access: viewAccess,
+      post_access: postAccess
+    }).eq('id', id);
+    
+    setProject({ ...project, view_access: viewAccess, post_access: postAccess });
+    setShowSettings(false);
+  };
+  
+  const searchUsers = async () => {
+    if (!searchQuery.trim()) return;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, avatar_url')
+      .ilike('name', `%${searchQuery}%`)
+      .limit(5);
+    
+    if (error) {
+      console.error("Error searching users:", error);
+    }
+    setSearchResults(data || []);
+  };
+  
+  const addMember = async (userId) => {
+    const { error } = await supabase.from('project_members').insert({
+      project_id: id,
+      user_id: userId,
+      added_by: user.id
+    });
+    
+    if (error) {
+      console.error("Error adding member:", error);
+    } else {
+      await fetchSettingsData();
+      setSearchResults([]);
+      setSearchQuery('');
+    }
+  };
+  
+  const removeMember = async (userId) => {
+    const { error } = await supabase.from('project_members').delete().eq('project_id', id).eq('user_id', userId);
+    if (error) {
+      console.error("Error removing member:", error);
+    } else {
+      await fetchSettingsData();
+    }
+  };
+  
+  const updateRequest = async (requestId, userId, newStatus) => {
+    const { error: updateError } = await supabase.from('project_access_requests').update({ status: newStatus }).eq('id', requestId);
+    if (updateError) {
+      console.error("Error updating request:", updateError);
+      return;
+    }
+    
+    if (newStatus === 'approved') {
+      const { error: insertError } = await supabase.from('project_members').insert({
+        project_id: id,
+        user_id: userId,
+        added_by: user.id
+      });
+      if (insertError) {
+        console.error("Error adding approved member:", insertError);
+      } else {
+        await supabase.from('notifications').insert({
+          user_id: userId,
+          from_user_id: user.id,
+          type: 'access_approved',
+          project_id: id,
+          message: `Your request to join ${project.title} was approved!`
+        });
+      }
+    }
+    await fetchSettingsData();
+  };
 
   return (
     <>
@@ -765,14 +1235,25 @@ export default function ProjectPage() {
             {/* ── 2. Header row: title + track button ── */}
             <div className="pp-header-row">
               <h1 className="pp-project-title">{project.title}</h1>
-              {project.user_id !== user?.id && (
-                <button
-                  className={`btn-track ${isFollowing ? "tracking" : ""}`}
-                  onClick={(e) => { e.stopPropagation(); toggleFollow(); }}
-                >
-                  {isFollowing ? "✓ Tracking" : "Track"}
-                </button>
-              )}
+              <div className="pp-header-actions">
+                {project.user_id !== user?.id && (
+                  <button
+                    className={`btn-track ${isFollowing ? "tracking" : ""}`}
+                    onClick={(e) => { e.stopPropagation(); toggleFollow(); }}
+                  >
+                    {isFollowing ? "✓ Tracking" : "Track"}
+                  </button>
+                )}
+                {isCreator && (
+                  <button className="btn-settings" onClick={openSettings} title="Settings" style={{ position: 'relative' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    {pendingCount > 0 && <span className="pp-badge">{pendingCount}</span>}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* ── 3. Meta row: status + creator + description ── */}
@@ -801,143 +1282,187 @@ export default function ProjectPage() {
             {/* ── Description row ── */}
             {project.description && (
               <div className="pp-description">
-                <p style={{ fontsize: '0.9rem', color: '#71717A', lineHeight: 1.65 }}>{project.description}</p>
+                <p style={{ fontSize: '0.9rem', color: '#71717A', lineHeight: 1.65 }}>{project.description}</p>
               </div>
             )}
 
             {/* ── 4. Bottom border / divider ── */}
             <div className="pp-header-bottom" />
+            
+            {/* ── Access Info Row ── */}
+            <div className="pp-access-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Viewing: {project.view_access === 'all' ? 'Everyone' : project.view_access === 'members' ? 'Members Only' : project.view_access === 'trackers' ? 'Trackers Only' : 'Creator Only'} &middot; Posting: {project.post_access === 'all' ? 'Everyone' : project.post_access === 'members' ? 'Members Only' : project.post_access === 'trackers' ? 'Trackers Only' : 'Creator Only'}
+            </div>
 
             {/* ── 5. COMMUNITY label ── */}
             <div className="pp-section-label">
-              Community ({posts.length})
+              Community {canView && `(${posts.length})`}
             </div>
 
             {/* ── 6. Community card ── */}
             <div className="pp-community-card">
-
-              {/* ── 7. Posts feed ── */}
-              <div className="pp-feed">
-                {posts.length === 0 ? (
-                  <div className="pp-feed-empty">
-                    <div className="empty-icon">◻</div>
-                    <p>No posts yet — be the first to share an update.</p>
-                  </div>
-                ) : (
-                  posts.map((post) => {
-                    // Determine image url
-                    const imgUrl = post.image_url || (post.image_urls && post.image_urls[0]);
-                    const isClickable = !post._isLegacyMsg;
-
-                    return (
-                      <div
-                        key={post.id}
-                        className="pp-post"
-                        style={{ cursor: isClickable ? "pointer" : "default" }}
-                        onClick={() => handlePostClick(post)}
-                        role={isClickable ? "button" : undefined}
-                        tabIndex={isClickable ? 0 : undefined}
-                        onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") handlePostClick(post); } : undefined}
-                        aria-label={isClickable ? `View post by ${post.profiles?.name || "User"}` : undefined}
-                      >
-                        {/* Avatar */}
-                        <div className="pp-post-avatar-col">
-                          {post.profiles?.avatar_url ? (
-                            <img
-                              src={post.profiles.avatar_url}
-                              alt="avatar"
-                              className="pp-post-avatar"
-                            />
-                          ) : (
-                            <div className="pp-post-initials">
-                              {post.profiles?.name
-                                ? post.profiles.name.charAt(0).toUpperCase()
-                                : "U"}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Post body */}
-                        <div className="pp-post-body">
-                          <div className="pp-post-header">
-                            <span className="pp-post-username">
-                              {post.profiles?.name || "User"}
-                            </span>
-                            <span className="pp-post-time">
-                              {formatTime(post.created_at)}
-                            </span>
-                          </div>
-                          {post.content && (
-                            <p className="pp-post-text">{post.content}</p>
-                          )}
-                          {imgUrl && (
-                            <img
-                              src={imgUrl}
-                              alt="post"
-                              className="pp-post-image"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* ── 8. Composer ── */}
-              <div className="pp-composer">
-                <div className="pp-composer-main">
-                  <input
-                    className="pp-composer-input"
-                    value={msgText}
-                    onChange={(e) => setMsgText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={user ? "Share an update or ask a question…" : "Sign in to post in this community"}
-                    disabled={!user || isPosting}
-                  />
-                  <button
-                    className="btn-post"
-                    onClick={sendPost}
-                    disabled={!user || isPosting || (!msgText.trim() && !image)}
-                  >
-                    {isPosting ? (
-                      <span className="pp-posting-spinner" />
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    )}
-                    Post
-                  </button>
-                </div>
-                <div className="pp-attach-row">
-                  <label className="pp-file-label" onClick={(e) => e.stopPropagation()}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    Attach Image
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="pp-file-hidden"
-                      onChange={handleImageChange}
-                      disabled={!user || isPosting}
-                    />
-                  </label>
-                  {imagePreview && (
-                    <div className="pp-preview-wrap">
-                      <img src={imagePreview} alt="preview" className="pp-preview-img" />
-                      <button className="pp-preview-remove" onClick={(e) => { e.stopPropagation(); clearImage(); }}>✕</button>
-                    </div>
+              
+              {!canView ? (
+                <div className="pp-restricted">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <p>This project's community is restricted.</p>
+                  {showRequestJoin && (
+                    <button 
+                      className="btn-request" 
+                      onClick={handleRequestAccess}
+                      disabled={requestStatus === 'pending'}
+                    >
+                      {requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
+                    </button>
                   )}
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* ── 7. Posts feed ── */}
+                  <div className="pp-feed">
+                    {posts.length === 0 ? (
+                      <div className="pp-feed-empty">
+                        <div className="empty-icon">◻</div>
+                        <p>No posts yet — be the first to share an update.</p>
+                      </div>
+                    ) : (
+                      posts.map((post) => {
+                        // Determine image url
+                        const imgUrl = post.image_url || (post.image_urls && post.image_urls[0]);
+                        const isClickable = !post._isLegacyMsg;
 
+                        return (
+                          <div
+                            key={post.id}
+                            className="pp-post"
+                            style={{ cursor: isClickable ? "pointer" : "default" }}
+                            onClick={() => handlePostClick(post)}
+                            role={isClickable ? "button" : undefined}
+                            tabIndex={isClickable ? 0 : undefined}
+                            onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") handlePostClick(post); } : undefined}
+                            aria-label={isClickable ? `View post by ${post.profiles?.name || "User"}` : undefined}
+                          >
+                            {/* Avatar */}
+                            <div className="pp-post-avatar-col">
+                              {post.profiles?.avatar_url ? (
+                                <img
+                                  src={post.profiles.avatar_url}
+                                  alt="avatar"
+                                  className="pp-post-avatar"
+                                />
+                              ) : (
+                                <div className="pp-post-initials">
+                                  {post.profiles?.name
+                                    ? post.profiles.name.charAt(0).toUpperCase()
+                                    : "U"}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Post body */}
+                            <div className="pp-post-body">
+                              <div className="pp-post-header">
+                                <span className="pp-post-username">
+                                  {post.profiles?.name || "User"}
+                                </span>
+                                <span className="pp-post-time">
+                                  {formatTime(post.created_at)}
+                                </span>
+                              </div>
+                              {post.content && (
+                                <p className="pp-post-text">{post.content}</p>
+                              )}
+                              {imgUrl && (
+                                <img
+                                  src={imgUrl}
+                                  alt="post"
+                                  className="pp-post-image"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* ── 8. Composer ── */}
+                  {!canPost ? (
+                    <div className="pp-composer-restricted">
+                      <span>You need access to post here.</span>
+                      {showRequestJoin && (
+                        <button 
+                          className="btn-request" 
+                          onClick={handleRequestAccess}
+                          disabled={requestStatus === 'pending'}
+                        >
+                          {requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="pp-composer">
+                      <div className="pp-composer-main">
+                        <input
+                          className="pp-composer-input"
+                          value={msgText}
+                          onChange={(e) => setMsgText(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder={user ? "Share an update or ask a question…" : "Sign in to post in this community"}
+                          disabled={!user || isPosting}
+                        />
+                        <button
+                          className="btn-post"
+                          onClick={sendPost}
+                          disabled={!user || isPosting || (!msgText.trim() && !image)}
+                        >
+                          {isPosting ? (
+                            <span className="pp-posting-spinner" />
+                          ) : (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="22" y1="2" x2="11" y2="13" />
+                              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                          )}
+                          Post
+                        </button>
+                      </div>
+                      <div className="pp-attach-row">
+                        <label className="pp-file-label" onClick={(e) => e.stopPropagation()}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                          </svg>
+                          Attach Image
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="pp-file-hidden"
+                            onChange={handleImageChange}
+                            disabled={!user || isPosting}
+                          />
+                        </label>
+                        {imagePreview && (
+                          <div className="pp-preview-wrap">
+                            <img src={imagePreview} alt="preview" className="pp-preview-img" />
+                            <button className="pp-preview-remove" onClick={(e) => { e.stopPropagation(); clearImage(); }}>✕</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -946,6 +1471,107 @@ export default function ProjectPage() {
           </div>
         )}
       </div>
+      
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="pp-modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="pp-modal" onClick={e => e.stopPropagation()}>
+            <div className="pp-modal-header">
+              <h2>Project Settings</h2>
+              <button className="pp-modal-close" onClick={() => setShowSettings(false)}>&times;</button>
+            </div>
+            <div className="pp-modal-body">
+              
+              <div className="pp-settings-group">
+                <label>Who can VIEW posts</label>
+                <select className="pp-settings-select" value={viewAccess} onChange={e => setViewAccess(e.target.value)}>
+                  <option value="creator">Creator Only</option>
+                  <option value="members">Members Only</option>
+                  <option value="trackers">Trackers Only</option>
+                  <option value="all">Everyone</option>
+                </select>
+                {viewAccess === 'members' && <div className="pp-settings-help">Only approved members can do this — others can request access.</div>}
+              </div>
+              
+              <div className="pp-settings-group">
+                <label>Who can POST</label>
+                <select className="pp-settings-select" value={postAccess} onChange={e => setPostAccess(e.target.value)}>
+                  <option value="creator">Creator Only</option>
+                  <option value="members">Members Only</option>
+                  <option value="trackers">Trackers Only</option>
+                  <option value="all">Everyone</option>
+                </select>
+                {postAccess === 'members' && <div className="pp-settings-help">Only approved members can do this — others can request access.</div>}
+              </div>
+              
+              <div className="pp-settings-group">
+                <label>Manage Members</label>
+                <div className="pp-member-search">
+                  <input 
+                    placeholder="Search by name..." 
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && searchUsers()}
+                  />
+                  <button onClick={searchUsers}>Search</button>
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="pp-list" style={{ marginBottom: 12 }}>
+                    {searchResults.map(res => (
+                      <div key={res.id} className="pp-list-item">
+                        <div className="pp-list-item-info">
+                          {res.avatar_url ? <img src={res.avatar_url} alt="" /> : <div style={{width: 24, height: 24, borderRadius: '50%', background: 'var(--border)'}}></div>}
+                          <span style={{ fontSize: '0.85rem' }}>{res.name}</span>
+                        </div>
+                        <div className="pp-list-item-actions">
+                          <button onClick={() => addMember(res.id)}>Add as Member</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="pp-list">
+                  {members.map(m => (
+                    <div key={m.id} className="pp-list-item">
+                      <div className="pp-list-item-info">
+                        {m.profiles?.avatar_url ? <img src={m.profiles.avatar_url} alt="" /> : <div style={{width: 24, height: 24, borderRadius: '50%', background: 'var(--border)'}}></div>}
+                        <span style={{ fontSize: '0.85rem' }}>{m.profiles?.name}</span>
+                      </div>
+                      <div className="pp-list-item-actions">
+                        <button onClick={() => removeMember(m.user_id)}>Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                  {members.length === 0 && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)'}}>No members added.</div>}
+                </div>
+              </div>
+              
+              <div className="pp-settings-group">
+                <label>Pending Requests</label>
+                <div className="pp-list">
+                  {pendingRequests.map(req => (
+                    <div key={req.id} className="pp-list-item">
+                      <div className="pp-list-item-info">
+                        {req.profiles?.avatar_url ? <img src={req.profiles.avatar_url} alt="" /> : <div style={{width: 24, height: 24, borderRadius: '50%', background: 'var(--border)'}}></div>}
+                        <span style={{ fontSize: '0.85rem' }}>{req.profiles?.name}</span>
+                      </div>
+                      <div className="pp-list-item-actions">
+                        <button className="btn-approve" onClick={() => updateRequest(req.id, req.user_id, 'approved')}>Approve</button>
+                        <button className="btn-reject" onClick={() => updateRequest(req.id, req.user_id, 'rejected')}>Reject</button>
+                      </div>
+                    </div>
+                  ))}
+                  {pendingRequests.length === 0 && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)'}}>No pending requests.</div>}
+                </div>
+              </div>
+              
+              <button className="btn-post" style={{ justifyContent: 'center', marginTop: 12 }} onClick={saveSettings}>Save Settings</button>
+              
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
