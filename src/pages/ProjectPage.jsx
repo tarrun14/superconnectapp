@@ -5,22 +5,14 @@ import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
 
 const styles = `
-  :root {
-    --bg-app: #0F0F11;
-    --bg-card: #1A1A1F;
-    --border: #2A2A2F;
-    --text-primary: #F4F4F5;
-    --text-secondary: #A1A1AA;
-    --accent: #7C3AED;
-    --accent-hover: #6D28D9;
-    --shadow: 0 4px 12px rgba(0,0,0,0.2);
-    --radius: 12px;
-    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  /* Global CSS variables are now inherited from index.css for Light/Dark mode */
+  /* Local constants for this page */
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   .pp-root {
+    --radius: 12px;
+    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 100vh;
     background: var(--bg-app);
     font-family: 'Inter', sans-serif;
@@ -34,7 +26,7 @@ const styles = `
   .project-banner {
     position: relative;
     width: 100%;
-    background: #1A1A1F;
+    background: var(--bg-card);
   }
   
   .project-banner img, .project-banner .placeholder-banner {
@@ -51,7 +43,7 @@ const styles = `
     left: 0;
     width: 100%;
     height: 150px;
-    background: linear-gradient(to bottom, transparent, #0F0F11);
+    background: linear-gradient(to bottom, transparent, var(--bg-app));
   }
 
   .pp-inner {
@@ -60,7 +52,7 @@ const styles = `
     padding: 0 24px;
     position: relative;
     z-index: 2;
-    background: #0F0F1180;
+    background: transparent;
   }
   
   .pp-inner::before, .pp-inner::after {
@@ -75,12 +67,12 @@ const styles = `
   
   .pp-inner::before {
     left: 0;
-    background: linear-gradient(to right, #0F0F11, transparent);
+    background: linear-gradient(to right, var(--bg-app), transparent);
   }
   
   .pp-inner::after {
     right: 0;
-    background: linear-gradient(to left, #0F0F11, transparent);
+    background: linear-gradient(to left, var(--bg-app), transparent);
   }
 
   /* ── Project header ── */
@@ -95,7 +87,7 @@ const styles = `
     font-family: 'Inter', sans-serif;
     font-size: 32px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-primary);
     margin-top: -60px;
     position: relative;
     z-index: 10;
@@ -197,13 +189,13 @@ const styles = `
 
   .messages-feed::-webkit-scrollbar { width: 6px; }
   .messages-feed::-webkit-scrollbar-track { background: transparent; }
-  .messages-feed::-webkit-scrollbar-thumb { background: #3A3A3F; border-radius: 4px; }
+  .messages-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   /* ── Message item ── */
   .message-item {
     display: flex;
     gap: 16px;
-    background: #151518;
+    background: var(--bg-app);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px;
@@ -269,8 +261,8 @@ const styles = `
 
   /* ── Composer ── */
   .composer {
-    border-top: 1px solid #2A2A2F;
-    background: #111114;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
   }
 
   .composer-text-row {
@@ -349,7 +341,7 @@ const styles = `
   }
 
   .file-label:hover {
-    color: #fff;
+    color: var(--text-primary);
     border-color: var(--accent);
     background: rgba(124, 58, 237, 0.1);
   }
@@ -567,7 +559,7 @@ export default function ProjectPage() {
                 
                 <div className="project-meta">
                   {project.status && <span className="status-badge">{project.status}</span>}
-                  <div className="creator-info">
+                  <div className="creator-info" style={{ alignItems: 'center' }}>
                     {project.profiles?.avatar_url ? (
                       <img src={project.profiles.avatar_url} alt="creator" className="creator-avatar" />
                     ) : (
@@ -575,7 +567,14 @@ export default function ProjectPage() {
                         {project.profiles?.name ? project.profiles.name.charAt(0).toUpperCase() : "U"}
                       </div>
                     )}
-                    <span>{project.profiles?.name || 'Unknown User'}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <span style={{ fontWeight: '600', lineHeight: 1.2 }}>{project.profiles?.name || 'Unknown User'}</span>
+                      {project.profiles?.username && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          @{project.profiles.username}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
