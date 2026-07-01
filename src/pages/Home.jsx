@@ -4,6 +4,8 @@ import { supabase } from "../supabaseClient";
 import CreatePost from "../components/CreatePost";
 import Feed from "../components/Feed";
 import BackgroundParticles from "../components/BackgroundParticles";
+import { useDebounce } from "../hooks/useDebounce";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const styles = `
 
@@ -400,11 +402,23 @@ export default function Home() {
   const [myProjects, setMyProjects] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [trendingProjects, setTrendingProjects] = useState([]);
+  const [followingUserProgress, setFollowingUserProgress] = useState({});
+  const [trackingProjectProgress, setTrackingProjectProgress] = useState({});
 
   // Search & Filter State
   const [searchText, setSearchText] = useState("");
+  const debouncedSearch = useDebounce(searchText, 400);
   const [searchTrigger, setSearchTrigger] = useState("");
   const [userSearchResults, setUserSearchResults] = useState([]);
+
+  // Auto trigger search on debounce
+  useEffect(() => {
+    if (searchText === "") {
+      setSearchTrigger("");
+    } else if (debouncedSearch) {
+      setSearchTrigger(debouncedSearch);
+    }
+  }, [debouncedSearch, searchText]);
   const [category, setCategory] = useState("All");
   const [topic, setTopic] = useState("All");
   const [sort, setSort] = useState("latest");
@@ -471,19 +485,23 @@ export default function Home() {
 
   const handleFollowUser = async (targetId) => {
     if (!currentUser) return;
+    setFollowingUserProgress(prev => ({ ...prev, [targetId]: true }));
     const { error } = await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: targetId });
     if (!error) {
       setSuggestedUsers(prev => prev.filter(u => u.id !== targetId));
       setStats(prev => ({ ...prev, following: prev.following + 1 }));
     }
+    setFollowingUserProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
   const handleFollowProject = async (targetId) => {
     if (!currentUser) return;
+    setTrackingProjectProgress(prev => ({ ...prev, [targetId]: true }));
     const { error } = await supabase.from("project_followers").insert({ user_id: currentUser.id, project_id: targetId });
     if (!error) {
       setTrendingProjects(prev => prev.filter(p => p.id !== targetId));
     }
+    setTrackingProjectProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
   const handleSearch = () => {
@@ -594,7 +612,9 @@ export default function Home() {
                           <div className="rs-user-name" onClick={() => navigate(`/profile/${u.username || u.id}`)} style={{cursor:'pointer'}}>{u.name || "User"}</div>
                           <div className="rs-user-occ">{u.occupation || "Member"}</div>
                         </div>
-                        <button className="rs-btn" onClick={() => handleFollowUser(u.id)}>Follow</button>
+                        <button className="rs-btn" onClick={() => handleFollowUser(u.id)} disabled={followingUserProgress[u.id]} style={{ opacity: followingUserProgress[u.id] ? 0.7 : 1 }}>
+                          {followingUserProgress[u.id] ? <div className="btn-spinner"></div> : "Follow"}
+                        </button>
                       </div>
                     ))}
                     {suggestedUsers.length > 0 && (
@@ -620,7 +640,9 @@ export default function Home() {
                         <div className="rs-project-info">
                           <div className="rs-project-name" onClick={() => navigate(`/project/${p.id}`)} style={{cursor:'pointer'}}>{p.title}</div>
                         </div>
-                        <button className="rs-btn" onClick={() => handleFollowProject(p.id)}>Track</button>
+                        <button className="rs-btn" onClick={() => handleFollowProject(p.id)} disabled={trackingProjectProgress[p.id]} style={{ opacity: trackingProjectProgress[p.id] ? 0.7 : 1 }}>
+                          {trackingProjectProgress[p.id] ? <div className="btn-spinner"></div> : "Track"}
+                        </button>
                       </div>
                     ))}
                     {trendingProjects.length > 0 && (
@@ -647,15 +669,13 @@ export default function Home() {
             {/* SEARCH & FILTERS */}
             <div className="search-filters-container">
               <div className="search-bar">
-                <input
-                  placeholder="Search posts or users..."
+                <input 
+                  type="text" 
+                  placeholder="Search users or projects..." 
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
                 />
-                <button onClick={handleSearch}>Search</button>
+                <button onClick={() => setSearchTrigger(searchText)}>Search</button>
               </div>
 
               <div className="filters-bar">
@@ -733,15 +753,17 @@ export default function Home() {
 
             <CreatePost onPostCreated={handleRefresh} />
 
-            <Feed 
-              refresh={refresh} 
-              feedType={feedType} 
-              currentUser={currentUser}
-              search={searchTrigger}
-              category={category}
-              topic={topic}
-              sort={sort}
-            />
+            <ErrorBoundary>
+              <Feed 
+                refresh={refresh} 
+                feedType={feedType} 
+                currentUser={currentUser}
+                search={searchTrigger}
+                category={category}
+                topic={topic}
+                sort={sort}
+              />
+            </ErrorBoundary>
           </div>
 
         </div>

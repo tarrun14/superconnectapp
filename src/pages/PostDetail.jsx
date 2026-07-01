@@ -272,6 +272,21 @@ export default function PostDetail() {
   const handleAddComment = async () => {
     if (!currentUser || newComment.trim() === "") return;
 
+    // 🛑 Rate Limit Check
+    const { data: isAllowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+      p_user_id: currentUser.id,
+      p_action: 'comments',
+      p_max_count: 20,
+      p_window_seconds: 60
+    });
+
+    if (rlError) {
+      console.error("Rate limit check failed:", rlError);
+    } else if (!isAllowed) {
+      alert("You're commenting too fast — please wait a moment.");
+      return;
+    }
+
     const { error } = await supabase.from("comments").insert([
       {
         user_id: currentUser.id,

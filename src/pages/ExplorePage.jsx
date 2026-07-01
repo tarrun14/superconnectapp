@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabaseClient";
 import Feed from "../components/Feed";
 import BackgroundParticles from "../components/BackgroundParticles";
+import CollabCard from "../components/CollabCard";
+import PostCollabModal from "../components/PostCollabModal";
 import { useNavigate } from "react-router-dom";
+import { useDebounce } from "../hooks/useDebounce";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+const SKILL_FILTERS = ['All', 'React', 'Python', 'UI/UX', 'Backend', 'Frontend', 'AI', 'Mobile', 'Design'];
 
 const styles = `
   /* Same layout styles as Home.jsx */
@@ -203,6 +209,112 @@ const styles = `
   .feed-tab:hover { color: var(--text-primary); background: var(--border); }
   .feed-tab.active { background: var(--accent); color: white; }
 
+  /* Collab Tab Header */
+  .collab-tab-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .btn-post-collab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #7C3AED;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-post-collab:hover { opacity: 0.85; }
+
+  /* Skill Filter Scroll Bar */
+  .skill-filter-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .skill-filter-wrap::-webkit-scrollbar { display: none; }
+  .skill-filter-row {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+  }
+  .skill-filter-pill {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .skill-filter-pill:hover {
+    border-color: rgba(168,85,247,0.4);
+    color: #A855F7;
+    background: rgba(124,58,237,0.06);
+  }
+  .skill-filter-pill.active {
+    background: rgba(124,58,237,0.15);
+    border-color: rgba(168,85,247,0.4);
+    color: #A855F7;
+  }
+
+  /* Collab Grid */
+  .collab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .collab-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .collab-empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.3;
+    margin-bottom: 6px;
+  }
+
+  /* Toast */
+  .explore-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #22C55E;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    z-index: 9999;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
+    white-space: nowrap;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   @media (max-width: 900px) {
     .left-sidebar { display: none; }
   }
@@ -212,19 +324,45 @@ export default function ExplorePage() {
   const [currentUser, setCurrentUser] = useState(null);
 
   // Feed state
-  const [feedType, setFeedType] = useState('All'); // All, Posts, Projects
+  const [feedType, setFeedType] = useState('All'); // All, Posts, Projects, Collabs
   const [searchText, setSearchText] = useState("");
+  const debouncedSearch = useDebounce(searchText, 400);
   const [searchTrigger, setSearchTrigger] = useState("");
+
+  useEffect(() => {
+    if (searchText === "") {
+      setSearchTrigger("");
+    } else if (debouncedSearch) {
+      setSearchTrigger(debouncedSearch);
+    }
+  }, [debouncedSearch, searchText]);
 
   // Sidebar state
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [trendingProjects, setTrendingProjects] = useState([]);
+  const [followingUserProgress, setFollowingUserProgress] = useState({});
+  const [trackingProjectProgress, setTrackingProjectProgress] = useState({});
+
+  // Collabs tab state
+  const [collabs, setCollabs] = useState([]);
+  const [collabsLoading, setCollabsLoading] = useState(false);
+  const [skillFilter, setSkillFilter] = useState('All');
+  const [showPostCollabModal, setShowPostCollabModal] = useState(false);
+  const [collabRefreshKey, setCollabRefreshKey] = useState(0);
+  const [toast, setToast] = useState(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (feedType === 'Collabs') {
+      fetchCollabs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedType, collabRefreshKey]);
 
   const fetchInitialData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -263,29 +401,65 @@ export default function ExplorePage() {
     setTrendingProjects(filteredProjects);
   };
 
+  const fetchCollabs = useCallback(async () => {
+    setCollabsLoading(true);
+    const { data, error } = await supabase
+      .from('collab_requests')
+      .select('*, creator:creator_id(*), project:project_id(id, title)')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setCollabs(data);
+    }
+    setCollabsLoading(false);
+  }, []);
+
   const handleFollowUser = async (targetId) => {
     if (!currentUser) return;
+    setFollowingUserProgress(prev => ({ ...prev, [targetId]: true }));
     const { error } = await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: targetId });
     if (!error) {
       setSuggestedUsers(prev => prev.filter(u => u.id !== targetId));
     }
+    setFollowingUserProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
   const handleFollowProject = async (targetId) => {
     if (!currentUser) return;
+    setTrackingProjectProgress(prev => ({ ...prev, [targetId]: true }));
     const { error } = await supabase.from("project_followers").insert({ user_id: currentUser.id, project_id: targetId });
     if (!error) {
       setTrendingProjects(prev => prev.filter(p => p.id !== targetId));
     }
+    setTrackingProjectProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
   const handleSearch = (e) => {
+    // Automatically handled by debounce, but kept for fallback or explicit search
     if (e.key === 'Enter') {
       setSearchTrigger(searchText);
     }
   };
 
+  const handleCollabPosted = () => {
+    setCollabRefreshKey(k => k + 1);
+    showToast('🎉 Collab request posted!');
+  };
 
+  const handleCollabClosed = (collabId) => {
+    setCollabs(prev => prev.filter(c => c.id !== collabId));
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2700);
+  };
+
+  // Filter collabs by skill
+  const filteredCollabs = skillFilter === 'All'
+    ? collabs
+    : collabs.filter(c => c.skills && c.skills.map(s => s.toLowerCase()).includes(skillFilter.toLowerCase()));
 
   return (
     <>
@@ -313,7 +487,9 @@ export default function ExplorePage() {
                     <div className="rs-user-occ">{u.occupation || "Member"}</div>
                   </div>
                   {currentUser && (
-                    <button className="rs-btn" onClick={() => handleFollowUser(u.id)}>Follow</button>
+                    <button className="rs-btn" onClick={() => handleFollowUser(u.id)} disabled={followingUserProgress[u.id]} style={{ opacity: followingUserProgress[u.id] ? 0.7 : 1 }}>
+                      {followingUserProgress[u.id] ? <div className="btn-spinner"></div> : "Follow"}
+                    </button>
                   )}
                 </div>
               ))
@@ -339,7 +515,9 @@ export default function ExplorePage() {
                     <div className="rs-user-occ" style={{ fontSize: '11px' }}>{p.status || 'Active'}</div>
                   </div>
                   {currentUser && (
-                    <button className="rs-btn" onClick={() => handleFollowProject(p.id)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)' }}>Track</button>
+                    <button className="rs-btn" onClick={() => handleFollowProject(p.id)} disabled={trackingProjectProgress[p.id]} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--ink)', opacity: trackingProjectProgress[p.id] ? 0.7 : 1 }}>
+                      {trackingProjectProgress[p.id] ? <div className="btn-spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: 'var(--accent)' }}></div> : "Track"}
+                    </button>
                   )}
                 </div>
               ))
@@ -351,7 +529,7 @@ export default function ExplorePage() {
             
             <div className="explore-header">
               <h1 className="explore-title">Explore</h1>
-              <p className="explore-subtitle">Discover posts and projects from the community</p>
+              <p className="explore-subtitle">Discover posts, projects, and collaboration opportunities</p>
             </div>
 
             <div className="explore-search">
@@ -370,31 +548,111 @@ export default function ExplorePage() {
             </div>
 
             <div className="feed-tabs">
-              {['All', 'Posts', 'Projects'].map(tab => (
+              {['All', 'Posts', 'Projects', 'Collabs'].map(tab => (
                 <button
                   key={tab}
                   className={`feed-tab ${feedType === tab ? 'active' : ''}`}
                   onClick={() => setFeedType(tab)}
                 >
-                  {tab}
+                  {tab === 'Collabs' ? '🤝 Collabs' : tab}
                 </button>
               ))}
             </div>
 
-            {/* THE GLOBAL FEED */}
-            <Feed
-              feedType={feedType}
-              currentUser={currentUser}
-              search={searchTrigger}
-              category="All"
-              topic="All"
-              sort="latest"
-              globalMode={true}
-            />
+            {/* COLLABS TAB */}
+            {feedType === 'Collabs' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Header row with Post button */}
+                <div className="collab-tab-header">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      Open Collab Requests
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {filteredCollabs.length} {filteredCollabs.length === 1 ? 'request' : 'requests'}{skillFilter !== 'All' ? ` for #${skillFilter}` : ' available'}
+                    </span>
+                  </div>
+                  {currentUser && (
+                    <button className="btn-post-collab" onClick={() => setShowPostCollabModal(true)}>
+                      + Post Collab Request
+                    </button>
+                  )}
+                </div>
+
+                {/* Skill Filter Bar */}
+                <div className="skill-filter-wrap">
+                  <div className="skill-filter-row">
+                    {SKILL_FILTERS.map(skill => (
+                      <button
+                        key={skill}
+                        className={`skill-filter-pill ${skillFilter === skill ? 'active' : ''}`}
+                        onClick={() => setSkillFilter(skill)}
+                      >
+                        {skill === 'All' ? 'All' : `#${skill}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Collab List */}
+                {collabsLoading ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                    Loading collab requests...
+                  </div>
+                ) : filteredCollabs.length === 0 ? (
+                  <div className="collab-empty">
+                    <div className="collab-empty-icon">🤝</div>
+                    <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {skillFilter !== 'All' ? `No collabs need #${skillFilter} right now` : 'No collab requests yet'}
+                    </div>
+                    <div style={{ fontSize: '12px' }}>
+                      {currentUser ? 'Be the first to post a collab request!' : 'Sign in to post a collab request'}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="collab-list">
+                    {filteredCollabs.map(collab => (
+                      <CollabCard
+                        key={collab.id}
+                        collab={collab}
+                        currentUser={currentUser}
+                        onCloseRequest={handleCollabClosed}
+                        onEditRequest={() => {/* TODO: edit flow */}}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* THE GLOBAL FEED */
+              <ErrorBoundary>
+                <Feed
+                  feedType={feedType}
+                  currentUser={currentUser}
+                  search={searchTrigger}
+                  category="All"
+                  topic="All"
+                  sort="latest"
+                  globalMode={true}
+                />
+              </ErrorBoundary>
+            )}
             
           </div>
         </div>
       </div>
+
+      {/* POST COLLAB MODAL */}
+      {showPostCollabModal && (
+        <PostCollabModal
+          currentUser={currentUser}
+          onClose={() => setShowPostCollabModal(false)}
+          onSuccess={handleCollabPosted}
+        />
+      )}
+
+      {/* TOAST */}
+      {toast && <div className="explore-toast">{toast}</div>}
     </>
   );
 }

@@ -6,6 +6,8 @@ import "./PostCard.css";
 export default function ProjectFeedCard({ project }) {
   const [user, setUser] = useState(null);
   const [following, setFollowing] = useState(false);
+  const [isFollowingAction, setIsFollowingAction] = useState(false);
+  const [isHiring, setIsHiring] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -16,8 +18,18 @@ export default function ProjectFeedCard({ project }) {
       checkFollow(currentUser);
     };
     init();
+    checkHiring();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id]);
+
+  const checkHiring = async () => {
+    const { count } = await supabase
+      .from('collab_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('project_id', project.id)
+      .eq('status', 'open');
+    setIsHiring((count || 0) > 0);
+  };
 
   const checkFollow = async (currentUser) => {
     if (currentUser.id === project.user_id) return;
@@ -31,6 +43,7 @@ export default function ProjectFeedCard({ project }) {
 
   const handleFollow = async () => {
     if (!user) return;
+    setIsFollowingAction(true);
     if (following) {
       await supabase
         .from("project_followers")
@@ -46,6 +59,7 @@ export default function ProjectFeedCard({ project }) {
         setFollowing(true);
       }
     }
+    setIsFollowingAction(false);
   };
 
   const creatorName = project.profiles?.name || "User";
@@ -59,7 +73,20 @@ export default function ProjectFeedCard({ project }) {
   }
 
   return (
-    <div className="post-card">
+    <div className="post-card" style={{ position: 'relative' }}>
+      {isHiring && (
+        <div style={{
+          position: 'absolute', top: 12, right: 12,
+          background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+          color: 'white',
+          fontSize: '10px', fontWeight: '700',
+          padding: '3px 8px', borderRadius: '20px',
+          letterSpacing: '0.05em', textTransform: 'uppercase',
+          zIndex: 2, boxShadow: '0 2px 8px rgba(245,158,11,0.3)'
+        }}>
+          🔥 Hiring
+        </div>
+      )}
       {/* HEADER */}
       <div className="post-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -136,6 +163,7 @@ export default function ProjectFeedCard({ project }) {
         {user && user.id !== project.user_id && (
           <button 
             onClick={handleFollow}
+            disabled={isFollowingAction}
             style={{ 
               background: following ? 'var(--accent)' : 'transparent',
               border: '1px solid var(--accent)',
@@ -144,10 +172,14 @@ export default function ProjectFeedCard({ project }) {
               borderRadius: '6px',
               fontSize: '13px',
               fontWeight: '600',
-              cursor: 'pointer'
+              cursor: isFollowingAction ? 'not-allowed' : 'pointer',
+              opacity: isFollowingAction ? 0.7 : 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            {following ? 'Tracking' : 'Track'}
+            {isFollowingAction ? <div className="btn-spinner" style={{ borderColor: following ? "rgba(255,255,255,0.3)" : "rgba(124,58,237,0.3)", borderTopColor: following ? "white" : "var(--accent)" }}></div> : following ? 'Tracking' : 'Track'}
           </button>
         )}
       </div>

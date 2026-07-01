@@ -2,6 +2,10 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import CollabCard from "../components/CollabCard";
+import PostCollabModal from "../components/PostCollabModal";
+import BackgroundParticles from "../components/BackgroundParticles";
+import ErrorBoundary from "../components/ErrorBoundary";
 import SkeletonLoader from "../components/SkeletonLoader";
 import FollowModals from "../components/FollowModals";
 
@@ -415,6 +419,11 @@ export default function UserProfile() {
   const [postComments, setPostComments] = useState({});
   const [showPostComments, setShowPostComments] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
+  const [isTogglingFollow, setIsTogglingFollow] = useState(false);
+  const [isCommenting, setIsCommenting] = useState({});
+
+  // Collab state
+  const [userCollabs, setUserCollabs] = useState([]);
 
   useEffect(() => {
     init();
@@ -436,6 +445,7 @@ export default function UserProfile() {
       await fetchUserPosts(rId);
       await fetchFollowStats(rId);
       if (user) await checkFollowStatus(user.id, rId);
+      fetchUserCollabs(rId);
       
     } catch(err) {
       console.error(err);
@@ -488,6 +498,16 @@ export default function UserProfile() {
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     setProjects(data || []);
+  };
+
+  const fetchUserCollabs = async (userId) => {
+    const { data } = await supabase
+      .from('collab_requests')
+      .select('*, project:project_id(id, title)')
+      .eq('creator_id', userId)
+      .eq('status', 'open')
+      .order('created_at', { ascending: false });
+    setUserCollabs(data || []);
   };
 
   const fetchFollowStats = async (userId) => {
@@ -558,6 +578,7 @@ export default function UserProfile() {
 
   const handlePostComment = async (postId) => {
     if (!currentUser || !commentInputs[postId]?.trim()) return;
+    setIsCommenting(prev => ({ ...prev, [postId]: true }));
     const { error } = await supabase.from("comments").insert([{
       user_id: currentUser.id,
       post_id: postId,
@@ -567,6 +588,7 @@ export default function UserProfile() {
       setCommentInputs(prev => ({ ...prev, [postId]: "" }));
       await fetchPostComments(postId);
     }
+    setIsCommenting(prev => ({ ...prev, [postId]: false }));
   };
 
   const checkFollowStatus = async (currentUserId, targetId) => {
@@ -579,24 +601,39 @@ export default function UserProfile() {
   };
 
   const handleFollowUser = async () => {
-    if (!currentUser || !resolvedId) return;
-    if (isFollowingUser) {
-      await supabase.from("follows").delete().match({ follower_id: currentUser.id, following_id: resolvedId });
-      setIsFollowingUser(false);
-      setFollowersCount(prev => prev - 1);
+    if (!currentUser || !resolvedId || isTogglingFollow) return;
+    setIsTogglingFollow(true);
+    
+    const previousFollowing = isFollowingUser;
+    
+    // Optimistic Update
+    setIsFollowingUser(!previousFollowing);
+    setFollowersCount(prev => previousFollowing ? prev - 1 : prev + 1);
+
+    if (previousFollowing) {
+      const { error } = await supabase.from("follows").delete().match({ follower_id: currentUser.id, following_id: resolvedId });
+      if (error) {
+        setIsFollowingUser(previousFollowing);
+        setFollowersCount(prev => prev + 1);
+        alert("Failed to unfollow user.");
+      }
     } else {
-      await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: resolvedId });
-      setIsFollowingUser(true);
-      setFollowersCount(prev => prev + 1);
-      
-      // Add notification
-      await supabase.from("notifications").insert({
-        user_id: resolvedId,
-        type: 'follow',
-        from_user_id: currentUser.id,
-        message: 'started following you'
-      });
+      const { error } = await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: resolvedId });
+      if (error) {
+        setIsFollowingUser(previousFollowing);
+        setFollowersCount(prev => prev - 1);
+        alert("Failed to follow user.");
+      } else {
+        // Add notification (fire and forget)
+        supabase.from("notifications").insert({
+          user_id: resolvedId,
+          type: 'follow',
+          from_user_id: currentUser.id,
+          message: 'started following you'
+        }).then();
+      }
     }
+    setIsTogglingFollow(false);
   };
 
   if (loading) return (
@@ -611,6 +648,7 @@ export default function UserProfile() {
     <>
       <style>{styles}</style>
       <div className="profile-root">
+        <ErrorBoundary>
         <div className="profile-inner">
           {userProfile && (
             <div className="profile-info-section">
@@ -641,13 +679,25 @@ export default function UserProfile() {
                        )}
                        {userProfile?.occupation && <p className="profile-meta">💼 {userProfile.occupation}</p>}
                        {userProfile?.age && <p className="profile-meta">🎂 {userProfile.age} years old</p>}
+                       
+                       {userProfile?.bio ? (
+                         <p style={{ marginTop: '12px', fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                           {userProfile.bio}
+                         </p>
+                       ) : (
+                         <p style={{ marginTop: '12px', fontSize: '0.95rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                           No bio yet
+                         </p>
+                       )}
                      </div>
                      {currentUser && currentUser.id !== resolvedId && (
                        <button 
                          className={`btn-follow-user ${isFollowingUser ? "active" : ""}`}
                          onClick={handleFollowUser}
+                         disabled={isTogglingFollow}
+                         style={{ opacity: isTogglingFollow ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                        >
-                         {isFollowingUser ? "Following" : "Follow"}
+                         {isTogglingFollow ? <div className="btn-spinner" style={{ borderColor: isFollowingUser ? "rgba(255,255,255,0.3)" : "rgba(124,58,237,0.3)", borderTopColor: isFollowingUser ? "white" : "var(--accent)" }}></div> : isFollowingUser ? "Following" : "Follow"}
                        </button>
                      )}
                    </div>
@@ -784,7 +834,9 @@ export default function UserProfile() {
                               placeholder="Write a comment..."
                               onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(post.id); }}
                             />
-                            <button onClick={() => handlePostComment(post.id)}>Post</button>
+                            <button onClick={() => handlePostComment(post.id)} disabled={isCommenting[post.id]} style={{ opacity: isCommenting[post.id] ? 0.7 : 1 }}>
+                              {isCommenting[post.id] ? <div className="btn-spinner"></div> : "Post"}
+                            </button>
                           </div>
                         </>
                       )}
@@ -794,7 +846,25 @@ export default function UserProfile() {
               )}
             </div>
           </div>
+
+          {/* COLLAB REQUESTS SECTION */}
+          {userCollabs.length > 0 && (
+            <div style={{ marginTop: '48px' }}>
+              <p className="section-label">Collab Requests ({userCollabs.length})</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {userCollabs.map(collab => (
+                  <CollabCard
+                    key={collab.id}
+                    collab={{ ...collab, creator: userProfile }}
+                    currentUser={currentUser}
+                    compact={true}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+        </ErrorBoundary>
       </div>
       <FollowModals 
         isOpen={!!modalType} 
@@ -804,4 +874,4 @@ export default function UserProfile() {
       />
     </>
   );
-}
+}

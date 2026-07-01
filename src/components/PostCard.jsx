@@ -17,6 +17,10 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
 
   const [showComments, setShowComments] = useState(false);
 
+  const [isLiking, setIsLiking] = useState(false);
+  const [isFollowingAction, setIsFollowingAction] = useState(false);
+  const [isCommenting, setIsCommenting] = useState(false);
+
   // ================= INIT =================
   useEffect(() => {
     const init = async () => {
@@ -59,17 +63,29 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
   };
 
   const handleLike = async () => {
-    if (!user) return;
+    if (!user || isLiking) return;
+    setIsLiking(true);
+    const start = Date.now();
 
-    if (liked) {
-      await supabase
+    const previousLiked = liked;
+    const previousLikeCount = likeCount;
+
+    // Optimistic Update
+    setLiked(!previousLiked);
+    setLikeCount((prev) => previousLiked ? prev - 1 : prev + 1);
+
+    if (previousLiked) {
+      const { error } = await supabase
         .from("likes")
         .delete()
         .eq("user_id", user.id)
         .eq("post_id", post.id);
 
-      setLiked(false);
-      setLikeCount((prev) => prev - 1);
+      if (error) {
+        setLiked(previousLiked);
+        setLikeCount(previousLikeCount);
+        alert("Failed to unlike post.");
+      }
     } else {
       const { error } = await supabase.from("likes").insert([
         {
@@ -78,20 +94,29 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
         },
       ]);
 
-      if (!error) {
-        setLiked(true);
-        setLikeCount((prev) => prev + 1);
-        
+      if (error) {
+        setLiked(previousLiked);
+        setLikeCount(previousLikeCount);
+        alert("Failed to like post.");
+      } else {
         if (user.id !== post.user_id) {
-          await supabase.from("notifications").insert({
+          // Fire and forget notification
+          supabase.from("notifications").insert({
             user_id: post.user_id,
             type: 'like',
             from_user_id: user.id,
             post_id: post.id,
             message: 'liked your post'
-          });
+          }).then();
         }
       }
+    }
+    
+    const elapsed = Date.now() - start;
+    if (elapsed < 1000) {
+      setTimeout(() => setIsLiking(false), 1000 - elapsed);
+    } else {
+      setIsLiking(false);
     }
   };
 
@@ -114,20 +139,17 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
 };
 
   const handleFollow = async () => {
-  if (!user || user.id === post.user_id) return;
+  if (!user || user.id === post.user_id || isFollowingAction) return;
 
-  console.log("CLICKED FOLLOW BUTTON");
+  setIsFollowingAction(true);
+  const start = Date.now();
 
-  // 🔍 always check fresh data from DB
-  const { data: existing } = await supabase
-    .from("follows")
-    .select("id")
-    .eq("follower_id", user.id)
-    .eq("following_id", post.user_id);
+  const previousFollowing = following;
+  
+  // Optimistic Update
+  setFollowing(!previousFollowing);
 
-  console.log("EXISTING:", existing);
-
-  if (existing && existing.length > 0) {
+  if (previousFollowing) {
     // 👉 UNFOLLOW
     const { error } = await supabase
       .from("follows")
@@ -135,10 +157,9 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
       .eq("follower_id", user.id)
       .eq("following_id", post.user_id);
 
-    console.log("DELETE ERROR:", error);
-
-    if (!error) {
-      setFollowing(false);
+    if (error) {
+      setFollowing(previousFollowing);
+      alert("Failed to unfollow user.");
     }
   } else {
     // 👉 FOLLOW
@@ -149,11 +170,17 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
       },
     ]);
 
-    console.log("INSERT ERROR:", error);
-
-    if (!error) {
-      setFollowing(true);
+    if (error) {
+      setFollowing(previousFollowing);
+      alert("Failed to follow user.");
     }
+  }
+  
+  const elapsed = Date.now() - start;
+  if (elapsed < 1000) {
+    setTimeout(() => setIsFollowingAction(false), 1000 - elapsed);
+  } else {
+    setIsFollowingAction(false);
   }
 };
   // ================= DELETE =================
@@ -191,6 +218,24 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
   const handleComment = async () => {
     if (!user || comment.trim() === "") return;
 
+    setIsCommenting(true);
+
+    // 🛑 Rate Limit Check
+    const { data: isAllowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+      p_user_id: user.id,
+      p_action: 'comments',
+      p_max_count: 20,
+      p_window_seconds: 60
+    });
+
+    if (rlError) {
+      console.error("Rate limit check failed:", rlError);
+    } else if (!isAllowed) {
+      alert("You're commenting too fast — please wait a moment.");
+      setIsCommenting(false);
+      return;
+    }
+
     const { error } = await supabase.from("comments").insert([
       {
         user_id: user.id,
@@ -213,6 +258,8 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
         });
       }
     }
+    
+    setIsCommenting(false);
   };
 
   const toggleComments = async () => {
@@ -269,8 +316,8 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
         </div>
 
         {user && user.id !== post.user_id && (
-          <button className="follow-btn" onClick={(e) => { e.stopPropagation(); handleFollow(); }}>
-            {following ? "Following" : "Follow"}
+          <button className="follow-btn" onClick={(e) => { e.stopPropagation(); handleFollow(); }} disabled={isFollowingAction} style={{ opacity: isFollowingAction ? 0.7 : 1 }}>
+            {isFollowingAction ? <div className="btn-spinner"></div> : following ? "Following" : "Follow"}
           </button>
         )}
 
@@ -303,8 +350,8 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
 
       {/* LIKE */}
       <div className="post-actions">
-        <button className="like-btn" onClick={(e) => { e.stopPropagation(); handleLike(); }}>
-          {liked ? "❤️" : "🤍"} {likeCount}
+        <button className="like-btn" onClick={(e) => { e.stopPropagation(); handleLike(); }} disabled={isLiking} style={{ opacity: isLiking ? 0.7 : 1 }}>
+          {isLiking ? <div className="btn-spinner" style={{ borderColor: "rgba(124, 58, 237, 0.3)", borderTopColor: "var(--accent)" }}></div> : <>{liked ? "❤️" : "🤍"} {likeCount}</>}
         </button>
       </div>
 
@@ -341,7 +388,9 @@ export default function PostCard({ post, onDelete, isDetail = false }) {
               onChange={(e) => setComment(e.target.value)}
               placeholder="Write a comment..."
             />
-            <button onClick={(e) => { e.stopPropagation(); handleComment(); }}>Post</button>
+            <button onClick={(e) => { e.stopPropagation(); handleComment(); }} disabled={isCommenting} style={{ opacity: isCommenting ? 0.7 : 1 }}>
+              {isCommenting ? <div className="btn-spinner"></div> : "Post"}
+            </button>
           </div>
         </>
       )}

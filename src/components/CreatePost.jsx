@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import ReactTextareaAutosize from 'react-textarea-autosize';
+import imageCompression from 'browser-image-compression';
 
 export default function CreatePost({ onPostCreated }) {
   const [content, setContent] = useState("");
@@ -43,16 +45,36 @@ export default function CreatePost({ onPostCreated }) {
 
     const user = sessionData.session.user;
 
+    // 🛑 Rate Limit Check
+    const { data: isAllowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+      p_user_id: user.id,
+      p_action: 'posts',
+      p_max_count: 10,
+      p_window_seconds: 60
+    });
+
+    if (rlError) {
+      console.error("Rate limit check failed:", rlError);
+    } else if (!isAllowed) {
+      alert("You're posting too fast — please wait a moment.");
+      setLoading(false);
+      return;
+    }
+
     let imageUrls = [];
 
     // ================= MULTIPLE IMAGE UPLOAD =================
     if (images.length > 0) {
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
       for (let img of images) {
-        const fileName = `${Date.now()}-${img.name}`;
+        let finalImg = img;
+        try { finalImg = await imageCompression(img, options); } catch(e) { console.error(e); }
+
+        const fileName = `${Date.now()}-${finalImg.name}`;
 
         const { error: uploadError } = await supabase.storage
           .from("post-images")
-          .upload(fileName, img);
+          .upload(fileName, finalImg);
 
         if (uploadError) {
           console.log("UPLOAD ERROR:", uploadError.message);
@@ -243,21 +265,23 @@ export default function CreatePost({ onPostCreated }) {
           style={{
             padding: "10px 24px",
             borderRadius: "8px",
-            background: loading ? "var(--text-secondary)" : "var(--accent)",
+            background: "var(--accent)",
             color: "#fff",
             border: "none",
             fontWeight: "600",
             fontFamily: "'Inter', sans-serif",
             cursor: loading ? "not-allowed" : "pointer",
-            transition: "background 200ms ease",
+            transition: "all 200ms ease",
             display: "inline-flex",
             alignItems: "center",
-            gap: "8px"
+            justifyContent: "center",
+            gap: "8px",
+            opacity: loading ? 0.7 : 1
           }}
           onMouseOver={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--accent-hover)"; }}
           onMouseOut={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--accent)"; }}
         >
-          {loading ? "Posting..." : "Post"}
+          {loading ? <div className="btn-spinner"></div> : "Post"}
         </button>
         </div>
       </div>

@@ -3,6 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
+import PostCollabModal from "../components/PostCollabModal";
+import { useDebounce } from "../hooks/useDebounce";
+import imageCompression from 'browser-image-compression';
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -800,7 +803,35 @@ export default function ProjectPage() {
 
   const [project, setProject] = useState(null);
   const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
+    const [posts, setPosts] = useState([]);
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
+  const sentinelRef = useRef(null);
+
+  // Auto trigger pagination when sentinel intersects
+  useEffect(() => {
+    if (!hasMore || isLoadingPosts) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setPage(p => p + 1);
+      }
+    });
+    if (sentinelRef.current) observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingPosts]);
+
+  useEffect(() => {
+    setPage(0);
+    setHasMore(true);
+    // posts fetched below
+  }, [id]);
+
+  useEffect(() => {
+    if (id) fetchPosts(page === 0);
+  }, [page, id]);
+
   const [msgText, setMsgText] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -820,9 +851,43 @@ export default function ProjectPage() {
   const [members, setMembers] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 400);
   const [searchResults, setSearchResults] = useState([]);
 
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const runSearch = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url, username')
+        .ilike('name', `%${debouncedSearch}%`)
+        .limit(5);
+      if (!error) setSearchResults(data || []);
+    };
+    runSearch();
+  }, [debouncedSearch]);
+
+  // Edit Project state
+  const [showEditProject, setShowEditProject] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editStatus, setEditStatus] = useState("idea");
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [isSavingProject, setIsSavingProject] = useState(false);
+  const [isTogglingFollow, setIsTogglingFollow] = useState(false);
+  const [isRequestingAccess, setIsRequestingAccess] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isUpdatingRequest, setIsUpdatingRequest] = useState({});
+
   const fileInputRef = useRef(null);
+
+  // Collab state
+  const [showPostCollabModal, setShowPostCollabModal] = useState(false);
+  const [collabToast, setCollabToast] = useState(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { init(); }, [id]);
@@ -934,6 +999,7 @@ export default function ProjectPage() {
 
   const handleRequestAccess = async () => {
     if (!user) return;
+    setIsRequestingAccess(true);
     try {
       const { error } = await supabase.from('project_access_requests').insert({
         project_id: id,
@@ -955,16 +1021,18 @@ export default function ProjectPage() {
           from_user_id: user.id,
           type: 'access_request',
           project_id: id,
-          message: `${profile?.name || 'A user'} requested to join your project ${project.title}`
+          message: `${profile?.name || 'A user'} requested member access to your project ${project.title}`
         });
       }
     } catch (err) {
       console.error(err);
     }
+    setIsRequestingAccess(false);
   };
 
   const toggleFollow = async () => {
     if (!user) return;
+    setIsTogglingFollow(true);
     try {
       if (isFollowing) {
         await supabase.from("project_followers").delete().eq("project_id", id).eq("user_id", user.id);
@@ -976,19 +1044,23 @@ export default function ProjectPage() {
     } catch (err) {
       console.error(err);
     }
+    setIsTogglingFollow(false);
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (isInitial = true) => {
+    setIsLoadingPosts(true);
     try {
-      // Try fetching from posts table with project_id
       const { data, error } = await supabase
         .from("posts")
         .select("*, profiles(name, avatar_url, username)")
         .eq("project_id", id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       if (!error && data) {
-        // Parse content if JSON-encoded
+        if (data.length < PAGE_SIZE) setHasMore(false);
+        else setHasMore(true);
+
         const formatted = (data || []).map((p) => {
           if (p.content && p.content.startsWith("{") && p.content.includes('"text"')) {
             try {
@@ -998,24 +1070,29 @@ export default function ProjectPage() {
           }
           return p;
         });
-        setPosts(formatted);
+        setPosts(prev => isInitial ? formatted : [...prev, ...formatted]);
       } else {
-        // Fallback to project_messages (legacy)
         const { data: msgs } = await supabase
           .from("project_messages")
           .select("*, profiles(name, avatar_url, username)")
           .eq("project_id", id)
-          .order("created_at", { ascending: false });
-        // Map project_messages to a post-like shape (no real post ID for navigation)
-        setPosts((msgs || []).map(m => ({
+          .order("created_at", { ascending: false })
+          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+          
+        if (msgs && msgs.length < PAGE_SIZE) setHasMore(false);
+        else setHasMore(true);
+
+        const formattedMsgs = (msgs || []).map(m => ({
           ...m,
           content: m.message,
           _isLegacyMsg: true,
-        })));
+        }));
+        setPosts(prev => isInitial ? formattedMsgs : [...prev, ...formattedMsgs]);
       }
     } catch (err) {
       console.error(err);
     }
+    setIsLoadingPosts(false);
   };
 
   const handleImageChange = (e) => {
@@ -1131,6 +1208,7 @@ export default function ProjectPage() {
   };
 
   const saveSettings = async () => {
+    setIsSavingSettings(true);
     await supabase.from('projects').update({
       view_access: viewAccess,
       post_access: postAccess
@@ -1138,20 +1216,49 @@ export default function ProjectPage() {
     
     setProject({ ...project, view_access: viewAccess, post_access: postAccess });
     setShowSettings(false);
+    setIsSavingSettings(false);
   };
   
-  const searchUsers = async () => {
-    if (!searchQuery.trim()) return;
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, name, avatar_url')
-      .ilike('name', `%${searchQuery}%`)
-      .limit(5);
+  const openEditProject = () => {
+    setEditTitle(project.title || "");
+    setEditDesc(project.description || "");
+    setEditStatus(project.status || "idea");
+    setEditImagePreview(project.image_url || null);
+    setEditImageFile(null);
+    setShowEditProject(true);
+  };
+  
+  const saveProject = async () => {
+    setIsSavingProject(true);
+    let imageUrl = project.image_url;
     
-    if (error) {
-      console.error("Error searching users:", error);
+    if (editImageFile) {
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+      let finalFile = editImageFile;
+      try { finalFile = await imageCompression(editImageFile, options); } catch(e) { console.error(e); }
+
+      const fileName = `covers-${Date.now()}-${finalFile.name}`;
+      const { error: uploadError } = await supabase.storage.from("project-images").upload(fileName, finalFile);
+      if (!uploadError) {
+        const { data } = supabase.storage.from("project-images").getPublicUrl(fileName);
+        imageUrl = data.publicUrl;
+      }
     }
-    setSearchResults(data || []);
+    
+    const { error } = await supabase.from("projects").update({
+      title: editTitle,
+      description: editDesc,
+      status: editStatus,
+      image_url: imageUrl
+    }).eq("id", id);
+    
+    if (!error) {
+      setProject({ ...project, title: editTitle, description: editDesc, status: editStatus, image_url: imageUrl });
+      setShowEditProject(false);
+    } else {
+      console.error("Error saving project:", error);
+    }
+    setIsSavingProject(false);
   };
   
   const addMember = async (userId) => {
@@ -1180,9 +1287,11 @@ export default function ProjectPage() {
   };
   
   const updateRequest = async (requestId, userId, newStatus) => {
+    setIsUpdatingRequest(prev => ({ ...prev, [requestId]: newStatus }));
     const { error: updateError } = await supabase.from('project_access_requests').update({ status: newStatus }).eq('id', requestId);
     if (updateError) {
       console.error("Error updating request:", updateError);
+      setIsUpdatingRequest(prev => ({ ...prev, [requestId]: null }));
       return;
     }
     
@@ -1205,6 +1314,7 @@ export default function ProjectPage() {
       }
     }
     await fetchSettingsData();
+    setIsUpdatingRequest(prev => ({ ...prev, [requestId]: null }));
   };
 
   return (
@@ -1233,18 +1343,49 @@ export default function ProjectPage() {
                   <button
                     className={`btn-track ${isFollowing ? "tracking" : ""}`}
                     onClick={(e) => { e.stopPropagation(); toggleFollow(); }}
+                    disabled={isTogglingFollow}
+                    style={{ opacity: isTogglingFollow ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    {isFollowing ? "✓ Tracking" : "Track"}
+                    {isTogglingFollow ? <div className="btn-spinner" style={{ borderColor: isFollowing ? "rgba(255,255,255,0.3)" : "var(--border)", borderTopColor: isFollowing ? "white" : "var(--text-primary)" }}></div> : isFollowing ? "✓ Tracking" : "Track"}
                   </button>
                 )}
                 {isCreator && (
-                  <button className="btn-settings" onClick={openSettings} title="Settings" style={{ position: 'relative' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="3"></circle>
-                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                    {pendingCount > 0 && <span className="pp-badge">{pendingCount}</span>}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setShowPostCollabModal(true)}
+                      title="Post Collab Request"
+                      style={{
+                        background: 'rgba(124,58,237,0.12)',
+                        border: '1px solid rgba(168,85,247,0.3)',
+                        color: '#A855F7',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        fontFamily: "'Inter', sans-serif",
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'background 0.2s'
+                      }}
+                    >
+                      🤝 Post Collab
+                    </button>
+                    <button className="btn-settings" onClick={openEditProject} title="Edit Project">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                    </button>
+                    <button className="btn-settings" onClick={openSettings} title="Settings" style={{ position: 'relative' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                      {pendingCount > 0 && <span className="pp-badge">{pendingCount}</span>}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -1317,9 +1458,10 @@ export default function ProjectPage() {
                     <button 
                       className="btn-request" 
                       onClick={handleRequestAccess}
-                      disabled={requestStatus === 'pending'}
+                      disabled={requestStatus === 'pending' || isRequestingAccess}
+                      style={{ opacity: isRequestingAccess ? 0.7 : 1, display: 'flex', justifyContent: 'center' }}
                     >
-                      {requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
+                      {isRequestingAccess ? <div className="btn-spinner" style={{ borderColor: "rgba(124,58,237,0.3)", borderTopColor: "var(--accent)" }}></div> : requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
                     </button>
                   )}
                 </div>
@@ -1402,9 +1544,10 @@ export default function ProjectPage() {
                         <button 
                           className="btn-request" 
                           onClick={handleRequestAccess}
-                          disabled={requestStatus === 'pending'}
+                          disabled={requestStatus === 'pending' || isRequestingAccess}
+                          style={{ opacity: isRequestingAccess ? 0.7 : 1, display: 'flex', justifyContent: 'center' }}
                         >
-                          {requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
+                          {isRequestingAccess ? <div className="btn-spinner" style={{ borderColor: "rgba(124,58,237,0.3)", borderTopColor: "var(--accent)" }}></div> : requestStatus === 'pending' ? 'Request pending — waiting for creator approval' : 'Request to Join'}
                         </button>
                       )}
                     </div>
@@ -1511,9 +1654,7 @@ export default function ProjectPage() {
                     placeholder="Search by name..." 
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && searchUsers()}
                   />
-                  <button onClick={searchUsers}>Search</button>
                 </div>
                 {searchResults.length > 0 && (
                   <div className="pp-list" style={{ marginBottom: 12 }}>
@@ -1557,8 +1698,12 @@ export default function ProjectPage() {
                         <span style={{ fontSize: '0.85rem' }}>{req.profiles?.name}</span>
                       </div>
                       <div className="pp-list-item-actions">
-                        <button className="btn-approve" onClick={() => updateRequest(req.id, req.user_id, 'approved')}>Approve</button>
-                        <button className="btn-reject" onClick={() => updateRequest(req.id, req.user_id, 'rejected')}>Reject</button>
+                        <button className="btn-approve" onClick={() => updateRequest(req.id, req.user_id, 'approved')} disabled={isUpdatingRequest[req.id]} style={{ opacity: isUpdatingRequest[req.id] === 'approved' ? 0.7 : 1, width: '60px', display: 'flex', justifyContent: 'center' }}>
+                          {isUpdatingRequest[req.id] === 'approved' ? <div className="btn-spinner" style={{ borderColor: "rgba(16,185,129,0.3)", borderTopColor: "#10B981" }}></div> : "Approve"}
+                        </button>
+                        <button className="btn-reject" onClick={() => updateRequest(req.id, req.user_id, 'rejected')} disabled={isUpdatingRequest[req.id]} style={{ opacity: isUpdatingRequest[req.id] === 'rejected' ? 0.7 : 1, width: '60px', display: 'flex', justifyContent: 'center' }}>
+                          {isUpdatingRequest[req.id] === 'rejected' ? <div className="btn-spinner" style={{ borderColor: "rgba(239,68,68,0.3)", borderTopColor: "#EF4444" }}></div> : "Reject"}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1566,12 +1711,123 @@ export default function ProjectPage() {
                 </div>
               </div>
               
-              <button className="btn-post" style={{ justifyContent: 'center', marginTop: 12 }} onClick={saveSettings}>Save Settings</button>
+              <button className="btn-post" style={{ justifyContent: 'center', marginTop: 12, opacity: isSavingSettings ? 0.7 : 1 }} onClick={saveSettings} disabled={isSavingSettings}>
+                {isSavingSettings ? <div className="btn-spinner" style={{ margin: '0 auto' }}></div> : "Save Settings"}
+              </button>
               
             </div>
           </div>
         </div>
       )}
+
+      {/* Edit Project Modal */}
+      {showEditProject && (
+        <div className="pp-modal-overlay" onClick={() => setShowEditProject(false)}>
+          <div className="pp-modal" onClick={e => e.stopPropagation()}>
+            <div className="pp-modal-header">
+              <h2>Edit Project</h2>
+              <button className="pp-modal-close" onClick={() => setShowEditProject(false)}>&times;</button>
+            </div>
+            <div className="pp-modal-body">
+              
+              <div className="pp-settings-group">
+                <label>Title</label>
+                <input 
+                  type="text" 
+                  className="pp-settings-select" 
+                  value={editTitle} 
+                  onChange={e => setEditTitle(e.target.value)} 
+                />
+              </div>
+              
+              <div className="pp-settings-group">
+                <label>Description</label>
+                <textarea 
+                  className="pp-settings-select" 
+                  value={editDesc} 
+                  onChange={e => setEditDesc(e.target.value)} 
+                  rows={3} 
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              
+              <div className="pp-settings-group">
+                <label>Status</label>
+                <select className="pp-settings-select" value={editStatus} onChange={e => setEditStatus(e.target.value)}>
+                  <option value="idea">Concept / Idea</option>
+                  <option value="in progress">In Progress</option>
+                  <option value="live">Live</option>
+                </select>
+              </div>
+
+              <div className="pp-settings-group">
+                <label>Cover Image</label>
+                <label className="pp-settings-select" style={{ cursor: 'pointer', textAlign: 'center', color: 'var(--accent)' }}>
+                  Upload New Image
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                    onChange={e => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setEditImageFile(file);
+                        setEditImagePreview(URL.createObjectURL(file));
+                      }
+                    }} 
+                  />
+                </label>
+                {editImagePreview && (
+                  <div style={{ marginTop: '12px', position: 'relative' }}>
+                    <img src={editImagePreview} alt="preview" style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                    <button 
+                      onClick={() => { setEditImageFile(null); setEditImagePreview(null); }}
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: '#EF4444', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}
+                    >✕</button>
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <button className="btn-post" style={{ flex: 1, justifyContent: 'center', opacity: isSavingProject ? 0.7 : 1 }} onClick={saveProject} disabled={isSavingProject}>
+                  {isSavingProject ? <div className="btn-spinner" style={{ margin: '0 auto' }}></div> : 'Save Changes'}
+                </button>
+                <button onClick={() => setShowEditProject(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  Cancel
+                </button>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST COLLAB MODAL */}
+      {showPostCollabModal && (
+        <PostCollabModal
+          currentUser={user}
+          preselectedProjectId={project?.id}
+          onClose={() => setShowPostCollabModal(false)}
+          onSuccess={() => {
+            setCollabToast('🎉 Collab request posted!');
+            setTimeout(() => setCollabToast(null), 2700);
+          }}
+        />
+      )}
+
+      {/* COLLAB TOAST */}
+      {collabToast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          background: '#22C55E', color: 'white', padding: '12px 24px',
+          borderRadius: '20px', fontSize: '13px', fontWeight: '600',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 9999,
+          animation: 'toastIn 0.3s ease', whiteSpace: 'nowrap'
+        }}>
+          {collabToast}
+        </div>
+      )}
     </>
   );
 }
+

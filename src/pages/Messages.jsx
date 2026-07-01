@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import BackgroundParticles from "../components/BackgroundParticles";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 // ── Simple XOR-based encryption using a shared key ──────────────────────────
 // We use a simple but effective approach: CryptoJS-style using Web Crypto API
@@ -317,6 +318,7 @@ export default function Messages() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     init();
@@ -417,7 +419,26 @@ export default function Messages() {
   };
 
   const sendMessage = async () => {
-    if (!text.trim() || !selectedUser || !user) return;
+    if (!text.trim() || !selectedUser || !user || isSending) return;
+    
+    setIsSending(true);
+    const start = Date.now();
+
+    // 🛑 Rate Limit Check
+    const { data: isAllowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+      p_user_id: user.id,
+      p_action: 'messages',
+      p_max_count: 30,
+      p_window_seconds: 60
+    });
+
+    if (rlError) {
+      console.error("Rate limit check failed:", rlError);
+    } else if (!isAllowed) {
+      alert("Too many messages sent — slow down a bit.");
+      setIsSending(false);
+      return;
+    }
 
     // 🔐 Encrypt before storing
     const { encryptedContent, ivString } = await encryptMessage(text, ENCRYPTION_KEY);
@@ -433,6 +454,7 @@ export default function Messages() {
 
     if (error) {
       console.log("SEND ERROR:", error.message);
+      setIsSending(false);
       return;
     }
 
@@ -447,6 +469,13 @@ export default function Messages() {
       from_user_id: user.id,
       message: 'sent you a message'
     });
+    
+    const elapsed = Date.now() - start;
+    if (elapsed < 500) {
+      setTimeout(() => setIsSending(false), 500 - elapsed);
+    } else {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -454,6 +483,7 @@ export default function Messages() {
       <style>{styles}</style>
       <div className="messages-root">
         <BackgroundParticles variant="split" />
+        <ErrorBoundary>
         <div className="messages-inner">
           {/* LEFT: Sidebar */}
           <div className={`chat-sidebar ${selectedUser ? 'hidden-mobile' : ''}`}>
@@ -541,7 +571,7 @@ export default function Messages() {
                     }}
                     placeholder="Type a message..."
                   />
-                  <button className="btn-send" onClick={sendMessage}>Send</button>
+                  <button className="btn-send" onClick={sendMessage} disabled={isSending} style={{ opacity: isSending ? 0.6 : 1 }}>Send</button>
                 </div>
               </>
             ) : (
@@ -551,6 +581,7 @@ export default function Messages() {
             )}
           </div>
         </div>
+        </ErrorBoundary>
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import PostCard from "./PostCard";
 import ProjectFeedCard from "./ProjectFeedCard";
@@ -11,24 +11,50 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
 
   // For empty states
   const [suggestedUsers, setSuggestedUsers] = useState([]);
-  // const [suggestedProjects, setSuggestedProjects] = useState([]);
+  const [followingProgress, setFollowingProgress] = useState({});
+
+  
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef(null);
+
+  // Auto trigger pagination when sentinel intersects
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setPage(p => p + 1);
+      }
+    });
+    if (sentinelRef.current) observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading]);
 
   useEffect(() => {
-    fetchPosts();
+    setPage(0);
+    setHasMore(true);
+    setPosts([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, feedType, currentUser, search, category, topic, sort, globalMode]);
 
-  const fetchPosts = async () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchPosts(page === 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, refresh, feedType, currentUser, search, category, topic, sort, globalMode]);
+
+
+  const fetchPosts = async (isInitial = true) => {
+    if (isInitial) setLoading(true);
     const start = Date.now();
-    await _fetchPostsInner();
+    await _fetchPostsInner(isInitial);
     const elapsed = Date.now() - start;
     if (elapsed < 500) await new Promise(r => setTimeout(r, 500 - elapsed));
-    setLoading(false);
+    if (isInitial) setLoading(false);
   };
 
-  const _fetchPostsInner = async () => {
-    // setLoading(true);
+  const _fetchPostsInner = async (isInitial) => {
+    // if (isInitial) setLoading(true);
     setErrorObj(null);
     setSuggestedUsers([]);
     // setSuggestedProjects([]);
@@ -57,7 +83,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
             setSuggestedUsers(sUsers || []);
           }
           setPosts([]);
-          // setLoading(false);
+          // if (isInitial) setLoading(false);
           return;
         }
 
@@ -65,7 +91,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         let postQuery = supabase
           .from("posts")
           .select(`*, profiles(name, avatar_url, username)`)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
         if (!globalMode) {
           postQuery = postQuery.in("user_id", followingIds);
@@ -74,7 +100,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         if (search && search.trim() !== "") {
           const { data: users } = await supabase.from("profiles").select("id").ilike("name", `%${search}%`);
           const matchIds = (users?.map(u => u.id) || []).filter(id => followingIds.includes(id));
-          if (matchIds.length === 0) { setPosts([]); /* setLoading(false); */ return; }
+          if (matchIds.length === 0) { setPosts([]); /* if (isInitial) setLoading(false); */ return; }
           postQuery = postQuery.in("user_id", matchIds);
         }
 
@@ -94,11 +120,13 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         if (category && category !== "All") posts = posts.filter(p => p.category === category);
         if (topic && topic !== "All") posts = posts.filter(p => p.topic === topic);
 
-        // fetch projects (source 2)
+        let mergedProjects = [];
+if (isInitial) {
+// fetch projects (source 2)
         let projQuery = supabase
           .from("projects")
           .select(`*, profiles(name, avatar_url, username)`)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
         if (!globalMode) {
           projQuery = projQuery.in("user_id", followingIds);
@@ -125,7 +153,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
               .from("projects")
               .select(`*, profiles(name, avatar_url, username)`)
               .in("id", directProjIds)
-              .order("created_at", { ascending: false });
+              .order("created_at", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
             if (search && search.trim() !== "") {
               directProjQuery = directProjQuery.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
@@ -142,9 +170,10 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
           if (!allProjectsMap.has(pr.id)) allProjectsMap.set(pr.id, pr);
         });
         const mergedProjects = Array.from(allProjectsMap.values());
+}
 
         // combine posts + merged projects, sort by created_at
-        let combined = [...posts, ...mergedProjects].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        let combined = isInitial ? [...posts, ...mergedProjects].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) : posts;
 
         if (sort === "top" || sort === "most_replies") {
           const [{ data: likesData }, { data: commentsData }] = await Promise.all([
@@ -166,8 +195,8 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
           combined = [...postsOnly, ...projectsOnly];
         }
 
-        setPosts(combined);
-        // setLoading(false);
+        setPosts(prev => isInitial ? combined : [...prev, ...combined]);
+        // if (isInitial) setLoading(false);
         return;
       }
 
@@ -183,14 +212,14 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
             setSuggestedUsers(sUsers || []);
           }
           setPosts([]);
-          // setLoading(false);
+          // if (isInitial) setLoading(false);
           return;
         }
 
         let postQuery = supabase
           .from("posts")
           .select(`*, profiles(name, avatar_url, username)`)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
         if (!globalMode) {
           postQuery = postQuery.in("user_id", followingIds);
@@ -199,7 +228,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         if (search && search.trim() !== "") {
           const { data: users } = await supabase.from("profiles").select("id").ilike("name", `%${search}%`);
           const matchIds = (users?.map(u => u.id) || []).filter(id => followingIds.includes(id));
-          if (matchIds.length === 0) { setPosts([]); /* setLoading(false); */ return; }
+          if (matchIds.length === 0) { setPosts([]); /* if (isInitial) setLoading(false); */ return; }
           postQuery = postQuery.in("user_id", matchIds);
         }
 
@@ -234,7 +263,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         }
 
         setPosts(result);
-        // setLoading(false);
+        // if (isInitial) setLoading(false);
         return;
       }
 
@@ -267,7 +296,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
 
           if (allProjectIds.length === 0) {
             setPosts([]);
-            // setLoading(false);
+            // if (isInitial) setLoading(false);
             return;
           }
         }
@@ -275,7 +304,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
         let projQuery = supabase
           .from("projects")
           .select(`*, profiles(name, avatar_url, username)`)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
         if (!globalMode) {
           projQuery = projQuery.in("id", allProjectIds);
@@ -290,7 +319,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
 
         const projects = (projData || []).map(pr => ({ ...pr, type: 'project' }));
         setPosts(projects);
-        // setLoading(false);
+        // if (isInitial) setLoading(false);
         return;
       }
 
@@ -298,7 +327,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
       console.error("Feed error:", err);
       setErrorObj(err.message || "Failed to load feed.");
     } finally {
-      // setLoading(false);
+      // if (isInitial) setLoading(false);
     }
   };
 
@@ -308,10 +337,12 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
 
   const handleFollowUser = async (targetId) => {
     if (!currentUser) return;
+    setFollowingProgress(prev => ({ ...prev, [targetId]: true }));
     const { error } = await supabase.from("follows").insert({ follower_id: currentUser.id, following_id: targetId });
     if (!error) {
       setSuggestedUsers(prev => prev.filter(u => u.id !== targetId));
     }
+    setFollowingProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
   // const handleFollowProject = async (targetId) => {
@@ -401,6 +432,7 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
           <button onClick={fetchPosts} style={{ marginTop: "12px", background: "var(--accent)", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}>Retry</button>
         </div>
       ) : (
+        <>
         <div className="posts-list" style={{ marginTop: 24 }}>
           {/* ALL & POSTS empty state: not following anyone */}
           {(feedType === 'All' || feedType === 'Posts') && posts.length === 0 && !globalMode && suggestedUsers.length > 0 && (
@@ -419,7 +451,9 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
                       <div className="suggestion-name">{u.name || "User"}</div>
                       <div className="suggestion-meta">{u.occupation || "Member"}</div>
                     </div>
-                    <button className="suggestion-btn" onClick={() => handleFollowUser(u.id)}>Follow</button>
+                    <button className="suggestion-btn" onClick={() => handleFollowUser(u.id)} disabled={followingProgress[u.id]} style={{ opacity: followingProgress[u.id] ? 0.7 : 1 }}>
+                      {followingProgress[u.id] ? <div className="btn-spinner"></div> : "Follow"}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -463,6 +497,8 @@ export default function Feed({ refresh, feedType, currentUser, search, category,
             )
           ))}
         </div>
+          {hasMore && <div ref={sentinelRef} style={{ height: "40px" }} />}
+        </>
       )}
     </div>
   );

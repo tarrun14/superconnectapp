@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
+import ErrorBoundary from "../components/ErrorBoundary";
+import imageCompression from 'browser-image-compression';
 
 const styles = `
 
@@ -379,6 +381,7 @@ export default function ProjectHub() {
   const [user, setUser] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [followStatus, setFollowStatus] = useState({}); // { [projectId]: boolean }
+  const [followingProgress, setFollowingProgress] = useState({});
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -452,6 +455,7 @@ export default function ProjectHub() {
 
     const currently = followStatus[projectId] || false;
 
+    setFollowingProgress((prev) => ({ ...prev, [projectId]: true }));
     // Optimistic update — flip the status for this project ID only
     setFollowStatus((prev) => ({ ...prev, [projectId]: !currently }));
 
@@ -473,6 +477,7 @@ export default function ProjectHub() {
       setFollowStatus((prev) => ({ ...prev, [projectId]: currently }));
       console.error(error);
     }
+    setFollowingProgress((prev) => ({ ...prev, [projectId]: false }));
   };
 
   const handleProjectClick = (proj) => {
@@ -487,10 +492,14 @@ export default function ProjectHub() {
     let imageUrl = null;
 
     if (newProject.imageFile) {
-      const fileName = `covers-${Date.now()}-${newProject.imageFile.name}`;
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+      let finalFile = newProject.imageFile;
+      try { finalFile = await imageCompression(newProject.imageFile, options); } catch(e) { console.error(e); }
+
+      const fileName = `covers-${Date.now()}-${finalFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from("project-images")
-        .upload(fileName, newProject.imageFile);
+        .upload(fileName, finalFile);
 
       if (uploadError) {
         alert("Image upload failed: " + uploadError.message);
@@ -542,6 +551,7 @@ export default function ProjectHub() {
       <style>{styles}</style>
       <div className="page-root">
         <BackgroundParticles variant="split" />
+        <ErrorBoundary>
         <div className="page-inner">
           <div className="page-header">
             <h2>Project Hub</h2>
@@ -623,8 +633,10 @@ export default function ProjectHub() {
                   <button
                     className={`btn-follow ${followStatus[proj.id] ? "active" : ""}`}
                     onClick={(e) => followProject(e, proj.id)}
+                    disabled={followingProgress[proj.id]}
+                    style={{ opacity: followingProgress[proj.id] ? 0.7 : 1 }}
                   >
-                    {followStatus[proj.id] ? "Tracking" : "Track"}
+                    {followingProgress[proj.id] ? <div className="btn-spinner" style={{ borderColor: followStatus[proj.id] ? "rgba(255,255,255,0.3)" : "rgba(124,58,237,0.3)", borderTopColor: followStatus[proj.id] ? "white" : "var(--accent)", margin: '0 auto' }}></div> : followStatus[proj.id] ? "Tracking" : "Track"}
                   </button>
                 )}
                 </div>
@@ -634,6 +646,7 @@ export default function ProjectHub() {
             </div>
           )}
         </div>
+        </ErrorBoundary>
       </div>
 
       {isModalOpen && (
@@ -686,8 +699,8 @@ export default function ProjectHub() {
 
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-              <button className="btn-submit" onClick={createProject} disabled={isCreating}>
-                {isCreating ? "Creating..." : "Create Project"}
+              <button className="btn-submit" onClick={createProject} disabled={isCreating} style={{ opacity: isCreating ? 0.7 : 1 }}>
+                {isCreating ? <div className="btn-spinner" style={{ margin: '0 auto' }}></div> : "Create Project"}
               </button>
             </div>
           </div>

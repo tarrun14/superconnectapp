@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const styles = `
   /* ── Navbar ── */
@@ -562,6 +563,7 @@ export default function Sidebar() {
     // Navigate based on type
     if (notif.type === 'follow') navigate(`/profile/${notif.from_user_id}`);
     else if (notif.type === 'message') navigate(`/messages`);
+    else if (notif.type === 'collab_interest') navigate(`/profile/${notif.from_user_id}`);
     else if (notif.project_id) navigate(`/project/${notif.project_id}`);
     else navigate(`/home`);
   };
@@ -665,6 +667,7 @@ export default function Sidebar() {
                   <button className="btn-mark-read" onClick={markAllAsRead}>Mark all as read</button>
                 )}
               </div>
+              <ErrorBoundary>
               <div className="notifications-list">
                 {notifications.length === 0 ? (
                   <div className="notification-empty">You're all caught up!</div>
@@ -685,10 +688,13 @@ export default function Sidebar() {
                       <div className="notification-content">
                         <div className="notification-text">
                           <strong>{n.profiles?.name || 'Someone'}</strong>{' '}
-                          {n.type === 'follow' && 'started following you'}
-                          {n.type === 'like' && 'liked your post'}
-                          {n.type === 'comment' && 'commented on your post'}
-                          {n.type === 'message' && 'sent you a message'}
+                          {n.type === 'follow' ? 'started following you' :
+                           n.type === 'like' ? 'liked your post' :
+                           n.type === 'comment' ? 'commented on your post' :
+                           n.type === 'message' ? 'sent you a message' :
+                           n.type === 'collab_interest' ? 'expressed interest in your collab request' :
+                           n.type === 'access_request' ? (n.message && n.message.includes('requested') ? n.message.substring(n.message.indexOf('requested')) : 'requested member access to a project') :
+                           (n.message || 'interacted with you')}
                         </div>
                         <div className="notification-time">
                           {new Date(n.created_at).toLocaleDateString()} {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -698,6 +704,7 @@ export default function Sidebar() {
                   ))
                 )}
               </div>
+              </ErrorBoundary>
             </div>
           )}
 

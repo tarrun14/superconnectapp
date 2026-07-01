@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
-import BackgroundParticles from "../components/BackgroundParticles";
+import PostCard from "../components/PostCard";
 import FollowModals from "../components/FollowModals";
+import imageCompression from 'browser-image-compression';
+import BackgroundParticles from "../components/BackgroundParticles";
+import CollabCard from "../components/CollabCard";
 
 const styles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -718,6 +721,7 @@ export default function Profile() {
   const [checkingEditUsername, setCheckingEditUsername] = useState(false);
   const [editAge, setEditAge] = useState("");
   const [editOccupation, setEditOccupation] = useState("");
+  const [editBio, setEditBio] = useState("");
   const [editSkills, setEditSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
@@ -743,9 +747,14 @@ export default function Profile() {
   const [postLikes, setPostLikes] = useState({});
   const [showPostComments, setShowPostComments] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
+  const [isCommenting, setIsCommenting] = useState({});
 
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Collab Requests state
+  const [myCollabs, setMyCollabs] = useState([]);
+  const [collabsLoading, setCollabsLoading] = useState(false);
 
   // Username prompt state
   const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
@@ -756,6 +765,17 @@ export default function Profile() {
   const [savingPromptUsername, setSavingPromptUsername] = useState(false);
 
   const navigate = useNavigate();
+
+  const fetchMyCollabs = async (userId) => {
+    setCollabsLoading(true);
+    const { data } = await supabase
+      .from('collab_requests')
+      .select('*, project:project_id(id, title)')
+      .eq('creator_id', userId)
+      .order('created_at', { ascending: false });
+    setMyCollabs(data || []);
+    setCollabsLoading(false);
+  };
 
   useEffect(() => {
     const validatePromptUsername = async () => {
@@ -867,6 +887,7 @@ export default function Profile() {
           setEditUsername(profile.username || "");
           setEditAge(profile.age || "");
           setEditOccupation(profile.occupation || "");
+          setEditBio(profile.bio || "");
           setEditSkills(profile.skills || []);
           
           if (profile.username_is_auto_generated && !profile.username_prompt_dismissed) {
@@ -880,6 +901,7 @@ export default function Profile() {
         await fetchProjects(user.id);
         await fetchMyPosts(user.id);
         await fetchFollowStats(user.id);
+        fetchMyCollabs(user.id);
       }
     } catch (err) {
       console.error("Error fetching user:", err.message);
@@ -973,6 +995,7 @@ export default function Profile() {
 
   const handlePostComment = async (postId) => {
     if (!user || !commentInputs[postId]?.trim()) return;
+    setIsCommenting(prev => ({ ...prev, [postId]: true }));
     const { error } = await supabase.from("comments").insert([{
       user_id: user.id,
       post_id: postId,
@@ -982,6 +1005,7 @@ export default function Profile() {
       setCommentInputs(prev => ({ ...prev, [postId]: "" }));
       await fetchPostComments(postId);
     }
+    setIsCommenting(prev => ({ ...prev, [postId]: false }));
   };
 
   const fetchFollowStats = async (userId) => {
@@ -1007,10 +1031,14 @@ export default function Profile() {
     let avatarUrl = profileData?.avatar_url || null;
 
     if (avatarFile) {
-      const fileName = `avatar-${Date.now()}-${avatarFile.name}`;
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+      let finalFile = avatarFile;
+      try { finalFile = await imageCompression(avatarFile, options); } catch(e) { console.error(e); }
+
+      const fileName = `avatar-${Date.now()}-${finalFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, avatarFile);
+        .upload(fileName, finalFile);
 
       if (uploadError) {
         alert("Avatar upload failed: " + uploadError.message);
@@ -1033,6 +1061,7 @@ export default function Profile() {
         username_prompt_dismissed: true,
         age: editAge ? parseInt(editAge) : null,
         occupation: editOccupation,
+        bio: editBio,
         avatar_url: avatarUrl,
         skills: editSkills
       })
@@ -1045,7 +1074,7 @@ export default function Profile() {
         alert("Error saving profile: " + error.message);
       }
     } else {
-      setProfileData({ ...profileData, name: editName, username: editUsername, age: editAge, occupation: editOccupation, avatar_url: avatarUrl, skills: editSkills });
+      setProfileData({ ...profileData, name: editName, username: editUsername, age: editAge, occupation: editOccupation, bio: editBio, avatar_url: avatarUrl, skills: editSkills });
       setShowUsernamePrompt(false);
       setIsEditingProfile(false);
       setAvatarFile(null);
@@ -1075,8 +1104,12 @@ export default function Profile() {
     if (!file || !user) return;
     setIsUploadingBanner(true);
     
-    const fileName = `banner-${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file);
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+    let finalFile = file;
+    try { finalFile = await imageCompression(file, options); } catch(e) { console.error(e); }
+
+    const fileName = `banner-${Date.now()}-${finalFile.name}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, finalFile);
 
     if (uploadError) {
       alert("Banner upload failed: " + uploadError.message);
@@ -1099,8 +1132,12 @@ export default function Profile() {
     if (!file || !user) return;
     setIsUploadingAvatar(true);
     
-    const fileName = `avatar-${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file);
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+    let finalFile = file;
+    try { finalFile = await imageCompression(file, options); } catch(e) { console.error(e); }
+
+    const fileName = `avatar-${Date.now()}-${finalFile.name}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, finalFile);
 
     if (uploadError) {
       alert("Avatar upload failed: " + uploadError.message);
@@ -1297,6 +1334,19 @@ export default function Profile() {
 
                    <input className="form-field" type="number" placeholder="Age" value={editAge} onChange={(e) => setEditAge(e.target.value)} style={{ marginBottom: '8px' }} />
                    <input className="form-field" placeholder="Occupation" value={editOccupation} onChange={(e) => setEditOccupation(e.target.value)} style={{ marginBottom: '8px' }} />
+                   
+                   <textarea
+                     className="form-field"
+                     placeholder="Write something about yourself..."
+                     value={editBio}
+                     onChange={(e) => setEditBio(e.target.value)}
+                     maxLength={200}
+                     rows={3}
+                     style={{ marginBottom: '4px', resize: 'vertical' }}
+                   />
+                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'right', marginBottom: '8px' }}>
+                     {editBio.length}/200
+                   </div>
                     
                     {/* Skill Tags Editor */}
                     <div style={{ marginBottom: '12px' }}>
@@ -1339,8 +1389,8 @@ export default function Profile() {
                     </div>
                     
                     <div style={{ display: 'flex', gap: '8px' }}>
-                     <button className="btn-create" onClick={handleSaveProfile} disabled={savingProfile || !isEditUsernameValid || isEditUsernameAvailable === false}>
-                       {savingProfile ? "Saving..." : "Save"}
+                     <button className="btn-create" onClick={handleSaveProfile} disabled={savingProfile || !isEditUsernameValid || isEditUsernameAvailable === false} style={{ opacity: savingProfile ? 0.7 : 1 }}>
+                       {savingProfile ? <div className="btn-spinner" style={{ margin: '0 auto' }}></div> : "Save"}
                      </button>
                      <button onClick={() => setIsEditingProfile(false)} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '11px 22px', borderRadius: '7px', cursor: 'pointer', color: 'var(--text-primary)' }}>
                        Cancel
@@ -1358,6 +1408,16 @@ export default function Profile() {
                    <p className="profile-email">{profileData?.email}</p>
                    {profileData?.occupation && <p className="profile-meta">💼 {profileData.occupation}</p>}
                    {profileData?.age && <p className="profile-meta">🎂 {profileData.age} years old</p>}
+                   
+                   {profileData?.bio ? (
+                     <p style={{ marginTop: '12px', fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                       {profileData.bio}
+                     </p>
+                   ) : (
+                     <p style={{ marginTop: '12px', fontSize: '0.95rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                       No bio yet
+                     </p>
+                   )}
                     
                     {/* Skill Tags Display */}
                     {profileData?.skills?.length > 0 && (
@@ -1439,8 +1499,8 @@ export default function Profile() {
                 </div>
               )}
             </div>
-            <button className="btn-create" onClick={createProject} disabled={uploading}>
-              {uploading ? "Creating..." : "Create Project"}
+            <button className="btn-create" onClick={createProject} disabled={uploading} style={{ opacity: uploading ? 0.7 : 1 }}>
+              {uploading ? <div className="btn-spinner" style={{ margin: '0 auto' }}></div> : "Create Project"}
             </button>
           </div>
 
@@ -1569,7 +1629,9 @@ export default function Profile() {
                               placeholder="Write a comment..."
                               onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment(post.id); }}
                             />
-                            <button onClick={() => handlePostComment(post.id)}>Post</button>
+                            <button onClick={() => handlePostComment(post.id)} disabled={isCommenting[post.id]} style={{ opacity: isCommenting[post.id] ? 0.7 : 1 }}>
+                              {isCommenting[post.id] ? <div className="btn-spinner"></div> : "Post"}
+                            </button>
                           </div>
                         </>
                       )}
@@ -1578,6 +1640,31 @@ export default function Profile() {
                 })
               )}
             </div>
+          </div>
+
+          {/* COLLAB REQUESTS SECTION */}
+          <div style={{ marginTop: '48px' }}>
+            <p className="section-label">Collab Requests ({myCollabs.length})</p>
+            {collabsLoading ? (
+              <div style={{ color: 'var(--text-secondary)', fontSize: '13px', padding: '16px 0' }}>Loading...</div>
+            ) : myCollabs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--text-secondary)', fontSize: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: '8px', opacity: 0.4 }}>🤝</div>
+                <div>No collab requests posted yet.</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {myCollabs.map(collab => (
+                  <CollabCard
+                    key={collab.id}
+                    collab={{ ...collab, creator: profileData }}
+                    currentUser={user}
+                    compact={true}
+                    onCloseRequest={(cid) => setMyCollabs(prev => prev.map(c => c.id === cid ? { ...c, status: 'closed' } : c))}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
