@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import SkeletonLoader from "../components/SkeletonLoader";
-import PostCard from "../components/PostCard";
 import FollowModals from "../components/FollowModals";
 import imageCompression from 'browser-image-compression';
 import BackgroundParticles from "../components/BackgroundParticles";

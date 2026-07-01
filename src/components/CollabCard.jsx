@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+
+let InterestModal = null;
+let InterestedUsersModal = null;
 
 const cardStyles = `
   .collab-card {
@@ -277,18 +280,23 @@ export default function CollabCard({
   const creatorUsername = creatorProfile?.username;
 
   // Lazy load modals to avoid circular deps
-  const [InterestModal, setInterestModal] = useState(null);
-  const [InterestedUsersModal, setInterestedUsersModal] = useState(null);
+  const [, forceRender] = useState(0);
 
   useEffect(() => {
     if (showInterestModal && !InterestModal) {
-      import('./InterestModal').then(m => setInterestModal(() => m.default));
+      import('./InterestModal').then(m => {
+        InterestModal = m.default;
+        forceRender(prev => prev + 1);
+      });
     }
   }, [showInterestModal]);
 
   useEffect(() => {
     if (showInterestedUsersModal && !InterestedUsersModal) {
-      import('./InterestedUsersModal').then(m => setInterestedUsersModal(() => m.default));
+      import('./InterestedUsersModal').then(m => {
+        InterestedUsersModal = m.default;
+        forceRender(prev => prev + 1);
+      });
     }
   }, [showInterestedUsersModal]);
 

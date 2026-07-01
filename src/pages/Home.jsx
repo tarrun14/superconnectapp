@@ -504,9 +504,7 @@ export default function Home() {
     setTrackingProjectProgress(prev => ({ ...prev, [targetId]: false }));
   };
 
-  const handleSearch = () => {
-    setSearchTrigger(searchText);
-  };
+
 
   useEffect(() => {
     if (!searchTrigger) {

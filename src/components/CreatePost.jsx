@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
-import ReactTextareaAutosize from 'react-textarea-autosize';
 import imageCompression from 'browser-image-compression';
 
 export default function CreatePost({ onPostCreated }) {

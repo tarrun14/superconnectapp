@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import CollabCard from "../components/CollabCard";
-import PostCollabModal from "../components/PostCollabModal";
-import BackgroundParticles from "../components/BackgroundParticles";
 import ErrorBoundary from "../components/ErrorBoundary";
 import SkeletonLoader from "../components/SkeletonLoader";
 import FollowModals from "../components/FollowModals";

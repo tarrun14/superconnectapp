@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "../supabaseClient";
 import SkeletonLoader from "../components/SkeletonLoader";
 import BackgroundParticles from "../components/BackgroundParticles";
@@ -828,9 +828,6 @@ export default function ProjectPage() {
     // posts fetched below
   }, [id]);
 
-  useEffect(() => {
-    if (id) fetchPosts(page === 0);
-  }, [page, id]);
 
   const [msgText, setMsgText] = useState("");
   const [image, setImage] = useState(null);
@@ -1047,7 +1044,7 @@ export default function ProjectPage() {
     setIsTogglingFollow(false);
   };
 
-  const fetchPosts = async (isInitial = true) => {
+  const fetchPosts = useCallback(async (isInitial = true) => {
     setIsLoadingPosts(true);
     try {
       const { data, error } = await supabase
@@ -1093,7 +1090,11 @@ export default function ProjectPage() {
       console.error(err);
     }
     setIsLoadingPosts(false);
-  };
+  }, [id, page]);
+
+  useEffect(() => {
+    if (id) fetchPosts(page === 0);
+  }, [page, id, fetchPosts]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

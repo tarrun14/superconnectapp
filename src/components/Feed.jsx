@@ -169,7 +169,7 @@ if (isInitial) {
         [...followedUserProjects, ...directFollowedProjects].forEach(pr => {
           if (!allProjectsMap.has(pr.id)) allProjectsMap.set(pr.id, pr);
         });
-        const mergedProjects = Array.from(allProjectsMap.values());
+        Array.from(allProjectsMap.values());
 }
 
         // combine posts + merged projects, sort by created_at
